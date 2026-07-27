@@ -60,10 +60,13 @@ if (hero && auroraCanvas) {
   let auroraWidth = 0;
   let auroraHeight = 0;
   let auroraStars = [];
+  let auroraFrame = 0;
+  let auroraLastFrame = 0;
+  let auroraVisible = true;
 
   function resizeAurora() {
     const rect = hero.getBoundingClientRect();
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1);
     auroraWidth = rect.width;
     auroraHeight = rect.height;
     auroraCanvas.width = Math.max(1, Math.round(rect.width * pixelRatio));
@@ -94,6 +97,13 @@ if (hero && auroraCanvas) {
   }
 
   function drawAurora(time = 0) {
+    auroraFrame = 0;
+    if (!auroraVisible || document.hidden) return;
+    if (!reducedMotion && time - auroraLastFrame < 33) {
+      auroraFrame = window.requestAnimationFrame(drawAurora);
+      return;
+    }
+    auroraLastFrame = time;
     auroraContext.clearRect(0, 0, auroraWidth, auroraHeight);
     auroraPointer.x += (auroraPointer.targetX - auroraPointer.x) * .045;
     auroraPointer.y += (auroraPointer.targetY - auroraPointer.y) * .045;
@@ -163,7 +173,12 @@ if (hero && auroraCanvas) {
     auroraContext.stroke();
     auroraContext.restore();
 
-    if (!reducedMotion) window.requestAnimationFrame(drawAurora);
+    if (!reducedMotion) auroraFrame = window.requestAnimationFrame(drawAurora);
+  }
+
+  function startAurora() {
+    if (auroraFrame || !auroraVisible || document.hidden) return;
+    auroraFrame = window.requestAnimationFrame(drawAurora);
   }
 
   hero.addEventListener("pointermove", (event) => {
@@ -179,8 +194,13 @@ if (hero && auroraCanvas) {
   });
 
   new ResizeObserver(resizeAurora).observe(hero);
+  new IntersectionObserver(([entry]) => {
+    auroraVisible = entry.isIntersecting;
+    if (auroraVisible) startAurora();
+  }, { threshold: .01 }).observe(hero);
+  document.addEventListener("visibilitychange", startAurora);
   resizeAurora();
-  drawAurora();
+  startAurora();
 }
 
 if (countdown) {
@@ -199,6 +219,9 @@ if (countdown) {
   let labelCenters = [];
   let labelY = 0;
   let maskDirty = true;
+  let countdownFrame = 0;
+  let countdownLastFrame = 0;
+  let countdownVisible = true;
 
   function updateCountdown() {
     const remaining = Math.max(0, targetTime - Date.now());
@@ -232,7 +255,7 @@ if (countdown) {
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1);
     displayWidth = rect.width;
     displayHeight = rect.height;
     canvas.width = Math.round(rect.width * pixelRatio);
@@ -295,6 +318,13 @@ if (countdown) {
   }
 
   function drawCountdown(time = 0) {
+    countdownFrame = 0;
+    if (!countdownVisible || document.hidden) return;
+    if (!reducedMotion && time - countdownLastFrame < 33) {
+      countdownFrame = window.requestAnimationFrame(drawCountdown);
+      return;
+    }
+    countdownLastFrame = time;
     if (maskDirty) rebuildDotMask();
     context.clearRect(0, 0, displayWidth, displayHeight);
 
@@ -315,12 +345,8 @@ if (countdown) {
       context.beginPath();
       context.arc(dot.x, dot.y, Math.max(1.2, radius), 0, Math.PI * 2);
       context.fillStyle = dot.color;
-      context.shadowColor = dot.color;
-      context.shadowBlur = 5;
       context.fill();
     });
-    context.shadowColor = "transparent";
-    context.shadowBlur = 0;
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
@@ -330,7 +356,12 @@ if (countdown) {
       context.fillText(label, labelCenters[index], labelY);
     });
 
-    if (!reducedMotion) window.requestAnimationFrame(drawCountdown);
+    if (!reducedMotion) countdownFrame = window.requestAnimationFrame(drawCountdown);
+  }
+
+  function startCountdown() {
+    if (countdownFrame || !countdownVisible || document.hidden) return;
+    countdownFrame = window.requestAnimationFrame(drawCountdown);
   }
 
   canvas.addEventListener("pointermove", (event) => {
@@ -342,12 +373,17 @@ if (countdown) {
   });
 
   new ResizeObserver(resizeCanvas).observe(canvas);
+  new IntersectionObserver(([entry]) => {
+    countdownVisible = entry.isIntersecting;
+    if (countdownVisible) startCountdown();
+  }, { threshold: .01 }).observe(countdown);
+  document.addEventListener("visibilitychange", startCountdown);
   document.fonts?.ready.then(() => {
     maskDirty = true;
   });
   resizeCanvas();
   updateCountdown();
-  drawCountdown();
+  startCountdown();
   const countdownInterval = window.setInterval(() => {
     if (updateCountdown() === 0) window.clearInterval(countdownInterval);
   }, 1000);
