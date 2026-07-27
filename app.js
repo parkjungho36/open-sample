@@ -37,24 +37,18 @@ if (countdown) {
   const targetTime = new Date(countdown.dataset.target).getTime();
   const canvas = countdown.querySelector("[data-dot-countdown]");
   const context = canvas.getContext("2d");
-  const glyphs = {
-    "0": ["11111", "10001", "10001", "10001", "10001", "10001", "11111"],
-    "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
-    "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
-    "3": ["11111", "00001", "00001", "01111", "00001", "00001", "11111"],
-    "4": ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
-    "5": ["11111", "10000", "10000", "11111", "00001", "00001", "11111"],
-    "6": ["11111", "10000", "10000", "11111", "10001", "10001", "11111"],
-    "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
-    "8": ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
-    "9": ["11111", "10001", "10001", "11111", "00001", "00001", "11111"],
-    ":": ["0", "0", "1", "0", "1", "0", "0"]
-  };
-  const labels = ["DAYS", "HOURS", "MINUTES", "SECONDS"];
-  let displayValue = "000:00:00:00";
-  let pointer = { x: -1000, y: -1000 };
+  const maskCanvas = document.createElement("canvas");
+  const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
+  const labels = ["DAYS", "HOURS", "MINS", "SECS"];
+  const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#c8c0f6", "#ffd400", "#111111", "#173b63"];
+  let displayValue = "0:00:00:00";
+  let pointer = { x: -1000, y: -1000, active: false };
   let displayWidth = 0;
   let displayHeight = 0;
+  let dots = [];
+  let labelCenters = [];
+  let labelY = 0;
+  let maskDirty = true;
 
   function updateCountdown() {
     const remaining = Math.max(0, targetTime - Date.now());
@@ -66,12 +60,16 @@ if (countdown) {
       seconds: totalSeconds % 60
     };
 
-    displayValue = [
-      String(values.days).padStart(3, "0"),
+    const nextDisplayValue = [
+      String(values.days),
       String(values.hours).padStart(2, "0"),
       String(values.minutes).padStart(2, "0"),
       String(values.seconds).padStart(2, "0")
-    ].join(":");
+    ].join(" : ");
+    if (nextDisplayValue !== displayValue) {
+      displayValue = nextDisplayValue;
+      maskDirty = true;
+    }
 
     countdown.setAttribute(
       "aria-label",
@@ -90,61 +88,92 @@ if (countdown) {
     canvas.width = Math.round(rect.width * pixelRatio);
     canvas.height = Math.round(rect.height * pixelRatio);
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    maskDirty = true;
+  }
+
+  function rebuildDotMask() {
+    const labelSpace = Math.max(28, displayHeight * .15);
+    const numberHeight = displayHeight - labelSpace;
+    let fontSize = Math.max(44, numberHeight * .82);
+
+    maskCanvas.width = Math.max(1, Math.ceil(displayWidth));
+    maskCanvas.height = Math.max(1, Math.ceil(displayHeight));
+    maskContext.clearRect(0, 0, displayWidth, displayHeight);
+    maskContext.textAlign = "center";
+    maskContext.textBaseline = "middle";
+    maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+
+    while (maskContext.measureText(displayValue).width > displayWidth - 28 && fontSize > 28) {
+      fontSize -= 2;
+      maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+    }
+
+    const numberCenterY = numberHeight * .49;
+    maskContext.fillStyle = "#000";
+    maskContext.fillText(displayValue, displayWidth / 2, numberCenterY);
+
+    const pixels = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
+    const gap = Math.max(5.2, Math.min(8, displayWidth / 132));
+    dots = [];
+
+    for (let y = gap / 2; y < numberHeight; y += gap) {
+      for (let x = gap / 2; x < displayWidth; x += gap) {
+        const pixelX = Math.min(maskCanvas.width - 1, Math.floor(x));
+        const pixelY = Math.min(maskCanvas.height - 1, Math.floor(y));
+        const alpha = pixels[(pixelY * maskCanvas.width + pixelX) * 4 + 3];
+        if (alpha > 35) {
+          const colorIndex = Math.abs(Math.floor(x / gap) * 17 + Math.floor(y / gap) * 31) % palette.length;
+          const sizeSeed = Math.abs(Math.floor(x / gap) * 13 + Math.floor(y / gap) * 19) % 7;
+          const radius = gap * (.18 + sizeSeed * .035);
+          dots.push({ baseX: x, baseY: y, x, y, radius, color: palette[colorIndex] });
+        }
+      }
+    }
+
+    const groups = displayValue.split(":").map((group) => group.trim());
+    const separatorWidth = maskContext.measureText(" : ").width;
+    const groupWidths = groups.map((group) => maskContext.measureText(group).width);
+    const totalWidth = groupWidths.reduce((sum, width) => sum + width, 0) + separatorWidth * 3;
+    let groupCursor = (displayWidth - totalWidth) / 2;
+    labelCenters = groupWidths.map((width, index) => {
+      const center = groupCursor + width / 2;
+      groupCursor += width + (index < groupWidths.length - 1 ? separatorWidth : 0);
+      return center;
+    });
+    labelY = Math.min(displayHeight - 2, numberCenterY + fontSize * .55 + 17);
+    maskDirty = false;
   }
 
   function drawCountdown(time = 0) {
+    if (maskDirty) rebuildDotMask();
     context.clearRect(0, 0, displayWidth, displayHeight);
 
-    const characterUnits = [...displayValue].reduce((sum, character) => {
-      return sum + (character === ":" ? 2.2 : 5.8);
-    }, 0);
-    const step = Math.min((displayWidth - 28) / characterUnits, (displayHeight - 54) / 7);
-    const dotRadius = Math.max(1.35, step * .18);
-    let cursorX = (displayWidth - characterUnits * step) / 2;
-    const startY = Math.max(10, (displayHeight - 7 * step - 28) / 2);
-    const groupCenters = [];
-    let groupStart = cursorX;
-    let groupIndex = 0;
+    dots.forEach((dot, index) => {
+      const deltaX = dot.baseX - pointer.x;
+      const deltaY = dot.baseY - pointer.y;
+      const distance = Math.max(1, Math.hypot(deltaX, deltaY));
+      const proximity = pointer.active ? Math.max(0, 1 - distance / 105) : 0;
+      const displacement = proximity * proximity * 24;
+      const targetX = dot.baseX + (deltaX / distance) * displacement;
+      const targetY = dot.baseY + (deltaY / distance) * displacement;
+      const easing = reducedMotion ? 1 : .16;
+      dot.x += (targetX - dot.x) * easing;
+      dot.y += (targetY - dot.y) * easing;
+      const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
+      const radius = dot.radius * (1 + pulse);
 
-    [...displayValue].forEach((character) => {
-      const glyph = glyphs[character];
-      const columns = character === ":" ? 1 : 5;
-
-      glyph.forEach((row, rowIndex) => {
-        [...row].forEach((cell, columnIndex) => {
-          const x = cursorX + columnIndex * step + step / 2;
-          const y = startY + rowIndex * step + step / 2;
-          const distance = Math.hypot(pointer.x - x, pointer.y - y);
-          const proximity = Math.max(0, 1 - distance / 82);
-          const pulse = reducedMotion ? 0 : Math.sin(time * .0024 + x * .018 + y * .025) * .08;
-          const active = cell === "1";
-          const radius = dotRadius * (active ? 1 + proximity * .75 + pulse : .72 + proximity * .22);
-
-          context.beginPath();
-          context.arc(x, y, Math.max(.8, radius), 0, Math.PI * 2);
-          context.fillStyle = active
-            ? `rgba(17, 17, 17, ${Math.min(1, .82 + proximity * .18 + pulse)})`
-            : `rgba(17, 17, 17, ${.075 + proximity * .09})`;
-          context.fill();
-        });
-      });
-
-      cursorX += (columns + (character === ":" ? 1.2 : .8)) * step;
-
-      if (character === ":") {
-        groupCenters.push((groupStart + cursorX - step * 2) / 2);
-        groupStart = cursorX;
-        groupIndex += 1;
-      }
+      context.beginPath();
+      context.arc(dot.x, dot.y, Math.max(1.2, radius), 0, Math.PI * 2);
+      context.fillStyle = dot.color;
+      context.fill();
     });
-    groupCenters.push((groupStart + cursorX) / 2);
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
-    context.font = `600 ${Math.max(8, Math.min(11, step * .52))}px "Open Sans", sans-serif`;
-    context.fillStyle = "rgba(17, 17, 17, .48)";
+    context.font = `700 ${Math.max(12, Math.min(17, displayWidth / 65))}px "Open Sans", sans-serif`;
+    context.fillStyle = "#111";
     labels.forEach((label, index) => {
-      context.fillText(label, groupCenters[index], displayHeight - 2);
+      context.fillText(label, labelCenters[index], labelY);
     });
 
     if (!reducedMotion) window.requestAnimationFrame(drawCountdown);
@@ -152,13 +181,16 @@ if (countdown) {
 
   canvas.addEventListener("pointermove", (event) => {
     const rect = canvas.getBoundingClientRect();
-    pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top, active: true };
   });
   canvas.addEventListener("pointerleave", () => {
-    pointer = { x: -1000, y: -1000 };
+    pointer = { x: -1000, y: -1000, active: false };
   });
 
   new ResizeObserver(resizeCanvas).observe(canvas);
+  document.fonts?.ready.then(() => {
+    maskDirty = true;
+  });
   resizeCanvas();
   updateCountdown();
   drawCountdown();
