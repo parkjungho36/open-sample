@@ -100,7 +100,7 @@ form button {
 }
 .partner-image img {
   display: block;
-  width: 100%;
+  width: min(100%, 340px);
   height: auto;
 }
 .hero h1 {
@@ -147,6 +147,70 @@ form button {
   max-width: 1140px;
   animation: heroFadeUp 1.05s 3.35s cubic-bezier(.22, 1, .36, 1) both;
 }
+.countdown {
+  position: relative;
+  overflow: hidden;
+  width: min(920px, 100%);
+  margin: 0 auto 32px;
+  padding: 22px 28px 26px;
+  border-radius: .38rem;
+  color: #fff;
+  background-color: #111;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, .16) 1px, transparent 1.2px);
+  background-size: 11px 11px;
+  text-align: left;
+}
+.countdown::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(17, 17, 17, .35), rgba(17, 17, 17, .92) 50%, rgba(17, 17, 17, .35));
+}
+.countdown-eyebrow,
+.countdown-display {
+  position: relative;
+  z-index: 1;
+}
+.countdown-eyebrow {
+  margin: 0 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  opacity: .66;
+}
+.countdown-display {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.countdown-unit {
+  min-width: 0;
+  padding: 0 22px;
+  border-left: 1px solid rgba(255, 255, 255, .2);
+}
+.countdown-unit:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.countdown-unit strong {
+  display: block;
+  font-size: clamp(38px, 5vw, 66px);
+  font-weight: 400;
+  line-height: .92;
+  letter-spacing: -.055em;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-unit span {
+  display: block;
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  opacity: .58;
+}
+.countdown.is-complete .countdown-eyebrow {
+  opacity: 1;
+}
 .chat-prompt { font-size: clamp(17px, 1.5vw, 22px); line-height: 1.55; margin: 0 0 30px; color: #555; }
 .composer {
   position: relative;
@@ -154,7 +218,7 @@ form button {
   border: 1px solid #d5d5d5;
   border-radius: 36px;
   box-shadow: 0 12px 34px rgba(0, 0, 0, .07), 0 2px 6px rgba(0, 0, 0, .03);
-  display: flex;
+  display: none;
   align-items: center;
   padding: 22px 90px 22px 30px;
   text-align: left;
@@ -187,7 +251,7 @@ form button {
   cursor: pointer;
 }
 .prompt-shortcuts {
-  display: flex;
+  display: none;
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
@@ -361,6 +425,12 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   .partner-image { min-height: 75px; margin-bottom: 32px; }
   .hero-symbol { --intro-y: 24vh; width: 44px; margin-bottom: 10px; }
   .chat-prompt { margin-bottom: 24px; }
+  .countdown {
+    margin-bottom: 26px;
+    padding: 20px;
+  }
+  .countdown-unit { padding: 0 12px; }
+  .countdown-unit strong { font-size: clamp(30px, 10vw, 48px); }
   .composer { min-height: 78px; border-radius: 28px; padding: 18px 70px 18px 22px; }
   .placeholder { font-size: 16px; }
   .composer-submit { width: 46px; height: 46px; right: 14px; bottom: auto; font-size: 29px; }
@@ -395,6 +465,14 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   .nav nav { gap: 9px; }
   .nav nav a { font-size: 11px; }
   .hero h1 { font-size: clamp(42px, 13vw, 58px); }
+  .countdown-display {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 22px;
+  }
+  .countdown-unit:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
   .simple form { padding: 22px; }
 }
 

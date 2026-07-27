@@ -31,6 +31,47 @@ route();
 
 const typed = document.querySelector("#typed");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const countdown = document.querySelector("[data-countdown]");
+
+if (countdown) {
+  const targetTime = new Date(countdown.dataset.target).getTime();
+  const fields = {
+    days: countdown.querySelector("[data-countdown-days]"),
+    hours: countdown.querySelector("[data-countdown-hours]"),
+    minutes: countdown.querySelector("[data-countdown-minutes]"),
+    seconds: countdown.querySelector("[data-countdown-seconds]")
+  };
+
+  function updateCountdown() {
+    const remaining = Math.max(0, targetTime - Date.now());
+    const totalSeconds = Math.floor(remaining / 1000);
+    const values = {
+      days: Math.floor(totalSeconds / 86400),
+      hours: Math.floor((totalSeconds % 86400) / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60
+    };
+
+    fields.days.textContent = String(values.days).padStart(3, "0");
+    fields.hours.textContent = String(values.hours).padStart(2, "0");
+    fields.minutes.textContent = String(values.minutes).padStart(2, "0");
+    fields.seconds.textContent = String(values.seconds).padStart(2, "0");
+
+    countdown.setAttribute(
+      "aria-label",
+      `온라인 챌린지 접수 마감까지 ${values.days}일 ${values.hours}시간 ${values.minutes}분 ${values.seconds}초`
+    );
+
+    if (remaining === 0) countdown.classList.add("is-complete");
+    return remaining;
+  }
+
+  updateCountdown();
+  const countdownInterval = window.setInterval(() => {
+    if (updateCountdown() === 0) window.clearInterval(countdownInterval);
+  }, 1000);
+}
+
 const lines = [
   "ChatGPT에게 물어보세요",
   "플레이어를 움직일 게임을 만들어볼까요?",
