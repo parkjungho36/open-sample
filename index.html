@@ -20,12 +20,11 @@
         <img src="assets/openai-wordmark.svg" alt="OpenAI">
       </a>
       <nav aria-label="주요 메뉴">
-        <a href="#home" data-route="home">Info</a>
-        <a href="#apply" data-route="apply">접수</a>
-        <a href="#submit" data-route="submit">제출</a>
-        <a href="#gallery" data-route="gallery">Gallery</a>
+        <a href="#apply" data-route="apply">상세정보</a>
+        <a href="#submit" data-route="submit">제출하기</a>
+        <a href="#gallery" data-route="gallery">작품보기</a>
       </nav>
-      <a class="nav-cta" href="#apply">참가 신청</a>
+      <a class="nav-cta" href="#apply">참여하기</a>
     </div>
   </header>
 
@@ -48,7 +47,7 @@
           <div class="dot-countdown" data-countdown data-target="2026-08-17T23:59:59+09:00" role="timer" aria-label="온라인 챌린지 접수 마감까지 남은 시간">
             <canvas data-dot-countdown aria-hidden="true"></canvas>
           </div>
-          <p class="chat-prompt">Build with Codex, Launch with HIVE<br>Codex로 게임을 만들고 HIVE로 출시를 준비하세요</p>
+          <p class="chat-prompt">Build with Codex, Play with HIVE<br>Codex로 만들고, HIVE와 함께 플레이의 무대로</p>
           <div class="composer" aria-label="아이디어 프롬프트 예시">
             <span class="placeholder" id="typed">ChatGPT에게 물어보세요</span>
             <button class="composer-submit" type="button" aria-label="프롬프트 보내기">↑</button>
@@ -174,8 +173,8 @@
 
       <section class="rewards shell" id="event-rewards" aria-labelledby="rewards-title">
         <p class="kicker">REWARDS</p>
-        <h2 id="rewards-title">좋은 게임을 만든 모든 사람에게.</h2>
-        <div class="reward-intro">OpenAI Game Hackathon 참가자 전원에게<br><strong>$100 상당 OpenAI 크레딧</strong>을 드립니다.</div>
+        <h2 id="rewards-title"><span>Codex와 함께</span><span>게임의 미래를 만들 주인공들에게.</span></h2>
+        <div class="reward-intro">OpenAI Game Hackathon 본선 참여자 전원에게<br><strong>$100 상당 OpenAI 크레딧</strong>을 드립니다.</div>
         <div class="reward-grid">
           <article>
             <p class="label">TRACK 1 WINNERS</p>
@@ -186,15 +185,18 @@
               <li>우수상 (1팀): $7,500 상당 크레딧</li>
               <li>장려상 (5팀): $3,500 상당 크레딧</li>
             </ul>
-            <small>팀 당 대표자 1인 수령</small>
           </article>
           <article>
             <p class="label">TRACK 2 WINNERS</p>
             <h3>ChatGPT Pro 1년 구독권</h3>
             <p class="reward-big">3 teams</p>
-            <small>팀 당 대표자 1인 수령</small>
           </article>
         </div>
+        <ul class="reward-notes">
+          <li>리워드는 팀 당 대표자 1인이 수령할 수 있습니다.</li>
+          <li>심사를 위해 브라우저에서 바로 실행되는 웹 빌드 구현은 필수입니다.</li>
+          <li>향후 출시를 위해 HIVE 연동 요청이 권장될 수도 있습니다.</li>
+        </ul>
       </section>
 
       <section class="guests shell" id="event-guests" aria-labelledby="guests-title">
@@ -202,25 +204,43 @@
         <div class="guests-layout">
           <div>
           <h2 id="guests-title">Inviting<br>Korean legends.</h2>
-          <p>국내 게임 개발자와 함께 AI 활용 사례와 개발 경험을 나누고, 참가자의 인사이트 교류를 만듭니다.</p>
+          <p><strong>한국 게임을 만든 전설들이 한자리에.</strong><br>AI 활용 사례부터 실제 개발 경험까지,<br>게임의 다음을 이야기합니다.</p>
           </div>
           <div class="guest-list">
             <article>
               <img class="guest-photo" src="assets/Inviting_1.png" alt="Song Jae-Kyung">
-              <div class="guest-copy"><span>01</span><h3>Song Jae-Kyung</h3><p>대한민국 1세대 게임산업 개척자</p></div>
+              <div class="guest-copy"><span>01</span><em>송재경</em><h3>Song Jae-Kyung</h3><p>대한민국 1세대 게임산업 개척자</p><small># 바람의 나라 # 리니지</small></div>
             </article>
             <article>
               <img class="guest-photo" src="assets/Inviting_2.png" alt="Kang Dae-hyun">
-              <div class="guest-copy"><span>02</span><h3>Kang Dae-hyun</h3><p>라이브 역량의 대가</p></div>
+              <div class="guest-copy"><span>02</span><em>강대현</em><h3>Kang Dae-hyun</h3><p>라이브 역량의 대가</p><small># 던전앤파이터 # 메이플 키우기</small></div>
             </article>
             <article>
               <img class="guest-photo" src="assets/Inviting_3.png" alt="Lee Jeong-woong">
-              <div class="guest-copy"><span>03</span><h3>Lee Jeong-woong</h3><p>국민 게임 창시자</p></div>
+              <div class="guest-copy"><span>03</span><em>이정웅</em><h3>Lee Jeong-woong</h3><p>국민 게임 창시자</p><small># 애니팡 for Kakao # 애니팡2</small></div>
             </article>
             <article>
               <img class="guest-photo" src="assets/Inviting_4.png" alt="Kim Dong-gyu">
-              <div class="guest-copy"><span>04</span><h3>Kim Dong-gyu</h3><p>인디게임 · 1인 개발 게임 신화</p></div>
+              <div class="guest-copy"><span>04</span><em>김동규</em><h3>Kim Dong-gyu</h3><p>인디게임 · 1인 개발 게임 신화</p><small># 고양이와 스프 # 언데드 슬레이어</small></div>
             </article>
+            <div class="guest-hidden" aria-label="초청 게스트 라인업 공개 현황">
+              <div class="legend-meter" aria-hidden="true">
+                <span>♛</span>
+                <span>♛</span>
+                <span>♛</span>
+                <span>♛</span>
+                <span class="pending">♕</span>
+                <span class="pending">♕</span>
+                <span class="pending">♕</span>
+                <span class="pending">♕</span>
+                <span class="pending">♕</span>
+                <span class="pending">♕</span>
+              </div>
+              <div>
+                <strong>10 legends, 4 revealed</strong>
+                <p>Meet the Korean Game Legends.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
