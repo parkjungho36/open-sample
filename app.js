@@ -3,6 +3,8 @@ const routeLinks = [...document.querySelectorAll("[data-route]")];
 const validRoutes = new Set(pages.map((page) => page.id));
 const siteHeader = document.querySelector(".nav");
 
+window.lucide?.createIcons();
+
 function syncHeaderTheme() {
   const heroSection = document.querySelector(".hero");
   const homePage = document.querySelector("#home");
