@@ -35,12 +35,26 @@ const countdown = document.querySelector("[data-countdown]");
 
 if (countdown) {
   const targetTime = new Date(countdown.dataset.target).getTime();
-  const fields = {
-    days: countdown.querySelector("[data-countdown-days]"),
-    hours: countdown.querySelector("[data-countdown-hours]"),
-    minutes: countdown.querySelector("[data-countdown-minutes]"),
-    seconds: countdown.querySelector("[data-countdown-seconds]")
+  const canvas = countdown.querySelector("[data-dot-countdown]");
+  const context = canvas.getContext("2d");
+  const glyphs = {
+    "0": ["11111", "10001", "10001", "10001", "10001", "10001", "11111"],
+    "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+    "2": ["11111", "00001", "00001", "11111", "10000", "10000", "11111"],
+    "3": ["11111", "00001", "00001", "01111", "00001", "00001", "11111"],
+    "4": ["10001", "10001", "10001", "11111", "00001", "00001", "00001"],
+    "5": ["11111", "10000", "10000", "11111", "00001", "00001", "11111"],
+    "6": ["11111", "10000", "10000", "11111", "10001", "10001", "11111"],
+    "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+    "8": ["11111", "10001", "10001", "11111", "10001", "10001", "11111"],
+    "9": ["11111", "10001", "10001", "11111", "00001", "00001", "11111"],
+    ":": ["0", "0", "1", "0", "1", "0", "0"]
   };
+  const labels = ["DAYS", "HOURS", "MINUTES", "SECONDS"];
+  let displayValue = "000:00:00:00";
+  let pointer = { x: -1000, y: -1000 };
+  let displayWidth = 0;
+  let displayHeight = 0;
 
   function updateCountdown() {
     const remaining = Math.max(0, targetTime - Date.now());
@@ -52,10 +66,12 @@ if (countdown) {
       seconds: totalSeconds % 60
     };
 
-    fields.days.textContent = String(values.days).padStart(3, "0");
-    fields.hours.textContent = String(values.hours).padStart(2, "0");
-    fields.minutes.textContent = String(values.minutes).padStart(2, "0");
-    fields.seconds.textContent = String(values.seconds).padStart(2, "0");
+    displayValue = [
+      String(values.days).padStart(3, "0"),
+      String(values.hours).padStart(2, "0"),
+      String(values.minutes).padStart(2, "0"),
+      String(values.seconds).padStart(2, "0")
+    ].join(":");
 
     countdown.setAttribute(
       "aria-label",
@@ -66,7 +82,86 @@ if (countdown) {
     return remaining;
   }
 
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    displayWidth = rect.width;
+    displayHeight = rect.height;
+    canvas.width = Math.round(rect.width * pixelRatio);
+    canvas.height = Math.round(rect.height * pixelRatio);
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  }
+
+  function drawCountdown(time = 0) {
+    context.clearRect(0, 0, displayWidth, displayHeight);
+
+    const characterUnits = [...displayValue].reduce((sum, character) => {
+      return sum + (character === ":" ? 2.2 : 5.8);
+    }, 0);
+    const step = Math.min((displayWidth - 28) / characterUnits, (displayHeight - 54) / 7);
+    const dotRadius = Math.max(1.35, step * .18);
+    let cursorX = (displayWidth - characterUnits * step) / 2;
+    const startY = Math.max(10, (displayHeight - 7 * step - 28) / 2);
+    const groupCenters = [];
+    let groupStart = cursorX;
+    let groupIndex = 0;
+
+    [...displayValue].forEach((character) => {
+      const glyph = glyphs[character];
+      const columns = character === ":" ? 1 : 5;
+
+      glyph.forEach((row, rowIndex) => {
+        [...row].forEach((cell, columnIndex) => {
+          const x = cursorX + columnIndex * step + step / 2;
+          const y = startY + rowIndex * step + step / 2;
+          const distance = Math.hypot(pointer.x - x, pointer.y - y);
+          const proximity = Math.max(0, 1 - distance / 82);
+          const pulse = reducedMotion ? 0 : Math.sin(time * .0024 + x * .018 + y * .025) * .08;
+          const active = cell === "1";
+          const radius = dotRadius * (active ? 1 + proximity * .75 + pulse : .72 + proximity * .22);
+
+          context.beginPath();
+          context.arc(x, y, Math.max(.8, radius), 0, Math.PI * 2);
+          context.fillStyle = active
+            ? `rgba(17, 17, 17, ${Math.min(1, .82 + proximity * .18 + pulse)})`
+            : `rgba(17, 17, 17, ${.075 + proximity * .09})`;
+          context.fill();
+        });
+      });
+
+      cursorX += (columns + (character === ":" ? 1.2 : .8)) * step;
+
+      if (character === ":") {
+        groupCenters.push((groupStart + cursorX - step * 2) / 2);
+        groupStart = cursorX;
+        groupIndex += 1;
+      }
+    });
+    groupCenters.push((groupStart + cursorX) / 2);
+
+    context.textAlign = "center";
+    context.textBaseline = "bottom";
+    context.font = `600 ${Math.max(8, Math.min(11, step * .52))}px "Open Sans", sans-serif`;
+    context.fillStyle = "rgba(17, 17, 17, .48)";
+    labels.forEach((label, index) => {
+      context.fillText(label, groupCenters[index], displayHeight - 2);
+    });
+
+    if (!reducedMotion) window.requestAnimationFrame(drawCountdown);
+  }
+
+  canvas.addEventListener("pointermove", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  });
+  canvas.addEventListener("pointerleave", () => {
+    pointer = { x: -1000, y: -1000 };
+  });
+
+  new ResizeObserver(resizeCanvas).observe(canvas);
+  resizeCanvas();
   updateCountdown();
+  drawCountdown();
   const countdownInterval = window.setInterval(() => {
     if (updateCountdown() === 0) window.clearInterval(countdownInterval);
   }, 1000);
