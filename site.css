@@ -36,10 +36,6 @@ a { color: inherit; }
 
 .nav {
   height: var(--nav-height);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--pad);
   border-bottom: 0;
   position: fixed;
   top: 0;
@@ -50,6 +46,15 @@ a { color: inherit; }
   z-index: 10;
   isolation: isolate;
   transition: color .32s ease, border-color .32s ease;
+}
+.nav-inner {
+  width: min(100%, var(--max));
+  height: 100%;
+  margin-inline: auto;
+  padding-inline: var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .nav::before {
   position: absolute;
@@ -222,6 +227,7 @@ main { padding-top: var(--nav-height); }
   display: block;
   width: 100%;
   height: 100%;
+  filter: drop-shadow(0 0 3px rgba(130, 210, 255, .52));
 }
 .chat-prompt { font-size: clamp(17px, 1.5vw, 22px); line-height: 1.55; margin: 15px 0 30px; color: #fff; }
 .composer {
@@ -575,6 +581,16 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
     min-height: 100svh;
     padding-top: calc(var(--nav-height) + 68px);
     padding-bottom: 68px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 9vw, 42px);
+    line-height: .98;
+  }
+  .hero h1 .hero-title-main,
+  .hero h1 .hero-title-location {
+    font-size: 1em;
+    letter-spacing: -.055em;
+    white-space: nowrap;
   }
   .partner-image { min-height: 75px; margin-bottom: 32px; }
   .hero-symbol { top: 18%; width: clamp(280px, 86vw, 480px); }
