@@ -100,7 +100,7 @@ form button {
 }
 .partner-image img {
   display: block;
-  width: 100%;
+  width: min(100%, 340px);
   height: auto;
 }
 .hero h1 {
@@ -147,6 +147,17 @@ form button {
   max-width: 1140px;
   animation: heroFadeUp 1.05s 3.35s cubic-bezier(.22, 1, .36, 1) both;
 }
+.dot-countdown {
+  width: min(1040px, 100%);
+  height: clamp(150px, 16vw, 210px);
+  margin: -4px auto 28px;
+  cursor: crosshair;
+}
+.dot-countdown canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 .chat-prompt { font-size: clamp(17px, 1.5vw, 22px); line-height: 1.55; margin: 0 0 30px; color: #555; }
 .composer {
   position: relative;
@@ -154,7 +165,7 @@ form button {
   border: 1px solid #d5d5d5;
   border-radius: 36px;
   box-shadow: 0 12px 34px rgba(0, 0, 0, .07), 0 2px 6px rgba(0, 0, 0, .03);
-  display: flex;
+  display: none;
   align-items: center;
   padding: 22px 90px 22px 30px;
   text-align: left;
@@ -187,7 +198,7 @@ form button {
   cursor: pointer;
 }
 .prompt-shortcuts {
-  display: flex;
+  display: none;
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
@@ -361,6 +372,10 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   .partner-image { min-height: 75px; margin-bottom: 32px; }
   .hero-symbol { --intro-y: 24vh; width: 44px; margin-bottom: 10px; }
   .chat-prompt { margin-bottom: 24px; }
+  .dot-countdown {
+    height: clamp(130px, 25vw, 170px);
+    margin-bottom: 22px;
+  }
   .composer { min-height: 78px; border-radius: 28px; padding: 18px 70px 18px 22px; }
   .placeholder { font-size: 16px; }
   .composer-submit { width: 46px; height: 46px; right: 14px; bottom: auto; font-size: 29px; }
@@ -395,6 +410,7 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   .nav nav { gap: 9px; }
   .nav nav a { font-size: 11px; }
   .hero h1 { font-size: clamp(42px, 13vw, 58px); }
+  .dot-countdown { height: 122px; }
   .simple form { padding: 22px; }
 }
 
