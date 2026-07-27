@@ -1,6 +1,16 @@
 const pages = [...document.querySelectorAll("[data-page]")];
 const routeLinks = [...document.querySelectorAll("[data-route]")];
 const validRoutes = new Set(pages.map((page) => page.id));
+const siteHeader = document.querySelector(".nav");
+
+function syncHeaderTheme() {
+  const heroSection = document.querySelector(".hero");
+  const homePage = document.querySelector("#home");
+  if (!siteHeader || !heroSection || !homePage) return;
+  const heroAtTop = homePage.classList.contains("active") && window.scrollY <= 8;
+  siteHeader.classList.toggle("is-hero", heroAtTop);
+  document.body.classList.toggle("hero-at-top", heroAtTop);
+}
 
 function route() {
   const requestedRoute = location.hash.slice(1) || "home";
@@ -24,14 +34,154 @@ function route() {
   }
 
   window.scrollTo({ top: 0, behavior: "auto" });
+  syncHeaderTheme();
 }
 
 window.addEventListener("hashchange", route);
+window.addEventListener("scroll", syncHeaderTheme, { passive: true });
+window.addEventListener("resize", syncHeaderTheme);
 route();
 
 const typed = document.querySelector("#typed");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const countdown = document.querySelector("[data-countdown]");
+const hero = document.querySelector(".hero");
+const auroraCanvas = document.querySelector("[data-hero-aurora]");
+
+if (hero && auroraCanvas) {
+  const auroraContext = auroraCanvas.getContext("2d");
+  const auroraPointer = {
+    x: .5,
+    y: .82,
+    targetX: .5,
+    targetY: .82,
+    active: false
+  };
+  let auroraWidth = 0;
+  let auroraHeight = 0;
+  let auroraStars = [];
+
+  function resizeAurora() {
+    const rect = hero.getBoundingClientRect();
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    auroraWidth = rect.width;
+    auroraHeight = rect.height;
+    auroraCanvas.width = Math.max(1, Math.round(rect.width * pixelRatio));
+    auroraCanvas.height = Math.max(1, Math.round(rect.height * pixelRatio));
+    auroraContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    const starCount = Math.round(Math.min(190, Math.max(90, rect.width / 8)));
+    auroraStars = Array.from({ length: starCount }, (_, index) => {
+      const seedX = Math.abs(Math.sin(index * 91.317 + 1.3) * 43758.5453) % 1;
+      const seedY = Math.abs(Math.sin(index * 47.771 + 4.8) * 24634.6345) % 1;
+      const seedSize = Math.abs(Math.sin(index * 17.113 + 8.1) * 15937.131) % 1;
+      return {
+        x: seedX,
+        y: seedY,
+        radius: .35 + seedSize * 1.15,
+        alpha: .18 + seedSize * .48,
+        phase: index * .73
+      };
+    });
+  }
+
+  function addAuroraGlow(x, y, radius, color) {
+    const gradient = auroraContext.createRadialGradient(x, y, 0, x, y, radius);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(.46, color.replace(/[\d.]+\)$/, ".04)"));
+    gradient.addColorStop(1, color.replace(/[\d.]+\)$/, "0)"));
+    auroraContext.fillStyle = gradient;
+    auroraContext.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+  }
+
+  function drawAurora(time = 0) {
+    auroraContext.clearRect(0, 0, auroraWidth, auroraHeight);
+    auroraPointer.x += (auroraPointer.targetX - auroraPointer.x) * .045;
+    auroraPointer.y += (auroraPointer.targetY - auroraPointer.y) * .045;
+
+    const drift = reducedMotion ? 0 : time * .000075;
+    const floorY = auroraHeight * .93;
+    const pointerX = auroraPointer.x * auroraWidth;
+    const pointerY = Math.max(auroraHeight * .58, auroraPointer.y * auroraHeight);
+
+    auroraContext.save();
+    auroraContext.globalCompositeOperation = "lighter";
+    addAuroraGlow(
+      auroraWidth * (.2 + Math.sin(drift * 1.7) * .05),
+      auroraHeight * .33,
+      auroraWidth * .34,
+      "rgba(112, 82, 178, .12)"
+    );
+    addAuroraGlow(
+      auroraWidth * (.78 + Math.sin(drift * 1.35 + 2) * .055),
+      auroraHeight * .42,
+      auroraWidth * .38,
+      "rgba(55, 129, 184, .1)"
+    );
+    addAuroraGlow(auroraWidth * (.16 + Math.sin(drift * 4) * .035), floorY, auroraWidth * .34, "rgba(236, 168, 203, .07)");
+    addAuroraGlow(auroraWidth * (.39 + Math.sin(drift * 3 + 1) * .045), floorY - 8, auroraWidth * .3, "rgba(183, 180, 244, .08)");
+    addAuroraGlow(auroraWidth * (.61 + Math.sin(drift * 2.6 + 2) * .04), floorY, auroraWidth * .32, "rgba(110, 197, 238, .08)");
+    addAuroraGlow(auroraWidth * (.84 + Math.sin(drift * 3.4 + 3) * .035), floorY, auroraWidth * .33, "rgba(118, 220, 190, .07)");
+    if (auroraPointer.active) {
+      addAuroraGlow(pointerX, pointerY, Math.max(48, auroraWidth * .038), "rgba(180, 211, 255, .11)");
+    }
+
+    const band = auroraContext.createLinearGradient(0, auroraHeight * .56, 0, auroraHeight);
+    band.addColorStop(0, "rgba(25, 25, 27, 0)");
+    band.addColorStop(.72, "rgba(126, 157, 210, .035)");
+    band.addColorStop(1, "rgba(224, 188, 222, .025)");
+    auroraContext.fillStyle = band;
+    auroraContext.fillRect(0, auroraHeight * .5, auroraWidth, auroraHeight * .5);
+    auroraContext.restore();
+
+    auroraContext.save();
+    const parallaxX = (auroraPointer.x - .5) * 18;
+    const parallaxY = (auroraPointer.y - .5) * 10;
+    auroraStars.forEach((star, index) => {
+      const depth = .35 + (index % 5) * .13;
+      const x = star.x * auroraWidth - parallaxX * depth;
+      const y = star.y * auroraHeight - parallaxY * depth;
+      const twinkle = reducedMotion ? 1 : .72 + Math.sin(time * .0012 + star.phase) * .28;
+      auroraContext.beginPath();
+      auroraContext.arc(x, y, star.radius, 0, Math.PI * 2);
+      auroraContext.fillStyle = `rgba(224, 232, 255, ${star.alpha * twinkle})`;
+      auroraContext.fill();
+    });
+
+    const orbitAlpha = .055 + (auroraPointer.active ? .025 : 0);
+    auroraContext.strokeStyle = `rgba(193, 184, 255, ${orbitAlpha})`;
+    auroraContext.lineWidth = 1;
+    auroraContext.beginPath();
+    auroraContext.ellipse(
+      auroraWidth * .5,
+      auroraHeight * .43,
+      auroraWidth * .31,
+      auroraHeight * .13,
+      -.15 + Math.sin(drift) * .035,
+      .15,
+      Math.PI * 1.72
+    );
+    auroraContext.stroke();
+    auroraContext.restore();
+
+    if (!reducedMotion) window.requestAnimationFrame(drawAurora);
+  }
+
+  hero.addEventListener("pointermove", (event) => {
+    const rect = hero.getBoundingClientRect();
+    auroraPointer.targetX = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    auroraPointer.targetY = Math.min(1, Math.max(.55, (event.clientY - rect.top) / rect.height));
+    auroraPointer.active = true;
+  });
+  hero.addEventListener("pointerleave", () => {
+    auroraPointer.targetX = .5;
+    auroraPointer.targetY = .82;
+    auroraPointer.active = false;
+  });
+
+  new ResizeObserver(resizeAurora).observe(hero);
+  resizeAurora();
+  drawAurora();
+}
 
 if (countdown) {
   const targetTime = new Date(countdown.dataset.target).getTime();
@@ -40,7 +190,7 @@ if (countdown) {
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
-  const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#c8c0f6", "#ffd400", "#111111", "#173b63"];
+  const palette = ["#38a9f3", "#16d5e8", "#9ae4fa", "#d3ccff", "#ffe26a", "#ffffff", "#9ec7f1"];
   let displayValue = "0:00:00:00";
   let pointer = { x: -1000, y: -1000, active: false };
   let displayWidth = 0;
@@ -165,13 +315,17 @@ if (countdown) {
       context.beginPath();
       context.arc(dot.x, dot.y, Math.max(1.2, radius), 0, Math.PI * 2);
       context.fillStyle = dot.color;
+      context.shadowColor = dot.color;
+      context.shadowBlur = 5;
       context.fill();
     });
+    context.shadowColor = "transparent";
+    context.shadowBlur = 0;
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.font = `700 ${Math.max(12, Math.min(17, displayWidth / 65))}px "Open Sans", sans-serif`;
-    context.fillStyle = "#111";
+    context.fillStyle = "rgba(255, 255, 255, .9)";
     labels.forEach((label, index) => {
       context.fillText(label, labelCenters[index], labelY);
     });
