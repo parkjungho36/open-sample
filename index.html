@@ -105,7 +105,7 @@
           <span aria-hidden="true">01.</span>
           <h2>Online Warm-up Challenge</h2>
         </div>
-        <div class="schedule-body">
+        <div class="schedule-body schedule-body-compact">
           <aside>2026<br><strong>JUL. 31 - AUG. 28</strong></aside>
           <div class="schedule-list">
             <article class="has-action">
@@ -246,26 +246,160 @@
       </section>
     </section>
 
-    <section class="page simple shell" id="apply" data-page aria-labelledby="apply-title">
-      <div class="apply-layout">
-        <div class="apply-intro">
-          <img src="assets/OAI_OpenAI_Wordmark_Black.svg" alt="OpenAI">
-          <h1 id="apply-title">
-            <span>GAME HACKATHON</span>
-            <span>참가 신청</span>
-          </h1>
-          <p class="page-lead">당신의 게임 아이디어와 연락처를 남겨주세요.</p>
+    <section class="page details-page" id="apply" data-page aria-labelledby="apply-title">
+      <header class="details-hero shell">
+        <p class="kicker">EVENT DETAILS</p>
+        <div class="details-hero-grid">
+          <div>
+            <p class="details-track">TRACK 1 <span>ONLINE</span></p>
+            <h1 id="apply-title">Online<br>Warm-up Challenge</h1>
+          </div>
+          <div class="details-hero-copy">
+            <p class="details-theme">From zero to one:<br>build with Codex</p>
+            <h2>아이디어를<br>플레이 가능한 게임으로</h2>
+            <p>Codex와 함께 게임 아이디어를 구현하세요.</p>
+          </div>
         </div>
-        <form data-demo-form>
-          <label for="apply-name">이름</label>
-          <input id="apply-name" name="name" autocomplete="name" placeholder="홍길동" required>
-          <label for="apply-email">이메일</label>
-          <input id="apply-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
-          <label for="apply-idea">만들고 싶은 게임</label>
-          <textarea id="apply-idea" name="idea" placeholder="아이디어를 들려주세요." required></textarea>
-          <button type="submit">신청서 보내기</button>
-          <p class="form-status" aria-live="polite"></p>
-        </form>
+      </header>
+
+      <div class="details-content shell">
+        <section class="details-principles" aria-labelledby="principles-title">
+          <div class="details-section-heading">
+            <p class="details-index">01</p>
+            <div>
+              <p class="kicker">THE CHALLENGE</p>
+              <h2 id="principles-title">무엇을 만들어야 하나요?</h2>
+              <p class="details-section-copy">게임을 직접 만들고, 완성된 플레이를 제출해야 합니다.</p>
+            </div>
+          </div>
+          <div class="principle-grid">
+            <article>
+              <span>01</span>
+              <h3>핵심 재미</h3>
+              <p>게임의 핵심 재미가 실제 플레이 안에서 구현되어야 합니다.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>플레이 가능</h3>
+              <p>심사위원이 별도의 도움 없이 게임을 직접 플레이할 수 있어야 합니다.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>Codex 활용</h3>
+              <p>아이디어를 게임으로 만드는 과정에서 Codex를 어떻게 활용했는지 보여주세요.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="details-process" aria-labelledby="process-title">
+          <div class="details-section-heading">
+            <p class="details-index">02</p>
+            <div>
+              <p class="kicker">HOW IT WORKS</p>
+              <h2 id="process-title">Track 1 진행 방식</h2>
+            </div>
+          </div>
+          <div class="process-flow">
+            <article>
+              <div class="process-marker">01</div>
+              <p class="process-label">ONLINE WARM-UP</p>
+              <h3>프로토타입 제출</h3>
+              <p>사전 챌린지를 통해 플레이 가능한 게임 프로토타입을 접수합니다.</p>
+            </article>
+            <article>
+              <div class="process-marker">02</div>
+              <p class="process-label">FINALISTS</p>
+              <h3>40개 작품 선정</h3>
+              <p>선정된 40개 작품은 서울에서 열리는 오프라인 게임 해커톤에 진출합니다.</p>
+            </article>
+            <article>
+              <div class="process-marker">03</div>
+              <p class="process-label">SEOUL, IN PERSON</p>
+              <h3>서울 현장 결선</h3>
+              <p>본선에서는 팀 대표가 게임을 직접 시연하고 작품을 발표합니다.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="details-rules" aria-labelledby="rules-title">
+          <div class="details-section-heading">
+            <p class="details-index">03</p>
+            <div>
+              <p class="kicker">SUBMISSION GUIDE</p>
+              <h2 id="rules-title">제출 안내</h2>
+            </div>
+          </div>
+
+          <div class="submission-table">
+            <article>
+              <h3>제출 형식</h3>
+              <div>
+                <p class="submission-title">심사 가능한 게임 빌드</p>
+                <ul class="format-list" aria-label="제출 가능한 게임 형식">
+                  <li>웹 게임</li>
+                  <li>PC 게임</li>
+                  <li>모바일 테스트 빌드</li>
+                  <li>기타 심사 가능한 게임</li>
+                </ul>
+              </div>
+            </article>
+
+            <article>
+              <h3>플레이 링크 요구 사항</h3>
+              <div>
+                <p class="submission-title"><span class="submission-state">필수</span> 플레이 가능한 게임 링크</p>
+                <p class="submission-summary">심사위원이 직접 플레이할 수 있는 링크를 제출해 주세요.</p>
+                <ul class="submission-points">
+                  <li>심사 기간 동안 접속 가능</li>
+                  <li>무료로 핵심 기능 플레이 가능</li>
+                  <li>별도 승인 없이 접근 가능</li>
+                  <li>로그인 필요 시 테스트 계정 제공</li>
+                  <li>조작법과 실행 방법 안내</li>
+                </ul>
+              </div>
+            </article>
+
+            <article>
+              <h3>선택 제출: 데모 영상</h3>
+              <div>
+                <p class="submission-title"><span class="submission-state optional">옵션 · 가산점</span> 3분 이내 플레이 영상</p>
+                <p class="submission-summary">실제 플레이가 포함된 영상을 제출해 주세요.</p>
+                <p class="video-outline">게임 소개 <span>/</span> 실제 플레이 <span>/</span> 핵심 기능</p>
+              </div>
+            </article>
+
+            <article>
+              <h3>Codex 활용</h3>
+              <div>
+                <p class="submission-title">Codex와 어떻게 게임을 만들었나요?</p>
+                <p class="submission-summary">활용 과정을 함께 설명하면 가산점이 부여됩니다.</p>
+                <ul class="codex-questions">
+                  <li>Codex를 어디에 사용했나요?</li>
+                  <li>어떤 기능을 구현했나요?</li>
+                  <li>어떤 문제를 해결했나요?</li>
+                  <li>사람이 직접 결정한 부분은 무엇인가요?</li>
+                </ul>
+              </div>
+            </article>
+
+            <article>
+              <h3>유의 사항</h3>
+              <div>
+                <ul class="submission-points important-notes">
+                  <li>심사를 위해 브라우저에서 바로 실행되는 웹 빌드 구현은 필수입니다.</li>
+                  <li>기존에 개발 중이었던 프로젝트도 사용할 수 있습니다.</li>
+                  <li>챌린지 기간 동안 새롭게 개발된 내용을 명기해 주세요.</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <a class="details-reward-link" href="#home" data-home-target="event-rewards">
+          <small>04 · REWARDS</small>
+          <span>Track 1 리워드</span>
+          <strong>리워드 및 혜택 안내 보기</strong>
+        </a>
       </div>
     </section>
 

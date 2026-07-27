@@ -447,3 +447,17 @@ document.querySelectorAll("[data-route-target]").forEach((button) => {
     location.hash = button.dataset.routeTarget;
   });
 });
+
+document.querySelectorAll("[data-home-target]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const targetId = link.dataset.homeTarget;
+    location.hash = "home";
+    window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start"
+      });
+    });
+  });
+});
