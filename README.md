@@ -1,3 +1,3 @@
-# OpenAI Game Hackathon in Seoul
+# Project Website
 
-Landing page for the OpenAI × Com2uS game hackathon.
+Internal website project.
