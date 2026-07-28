@@ -2616,15 +2616,15 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
 }
 .account-contact-value {
   min-height: 48px;
-  padding: 10px 14px;
+  padding: 0;
   display: flex;
   min-width: 0;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border: 1px solid #cfcfcf;
-  border-radius: .38rem;
-  background: #fafafa;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 .account-contact-value > strong {
   min-width: 0;
@@ -2635,14 +2635,22 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   white-space: nowrap;
 }
 .account-contact-value > button {
-  padding: 0;
+  min-height: auto;
+  padding: 0 0 2px;
   flex: 0 0 auto;
   border: 0;
   border-bottom: 1px solid #888;
+  border-radius: 0;
   color: #555;
   background: transparent;
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.35;
   cursor: pointer;
+}
+
+.account-contact-value > button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
 }
 .country-consent-field {
   min-height: 132px;
