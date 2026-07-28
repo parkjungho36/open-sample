@@ -36,6 +36,9 @@ function route() {
   }
 
   window.scrollTo({ top: 0, behavior: "auto" });
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  });
   syncHeaderTheme();
 }
 
@@ -440,6 +443,22 @@ document.querySelectorAll("[data-scroll-target]").forEach((button) => {
     document.getElementById(button.dataset.scrollTarget)?.scrollIntoView({
       behavior: reducedMotion ? "auto" : "smooth",
       block: "start"
+    });
+  });
+});
+
+document.querySelectorAll("[data-details-anchor]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const target = document.getElementById(link.dataset.detailsAnchor);
+    if (!target) return;
+
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start"
+      });
     });
   });
 });
