@@ -883,13 +883,13 @@
                     <small>형식: YYYY-MM-DD</small>
                   </label>
                   <label class="field-wide">
-                    <span>소속 <em>선택</em></span>
-                    <input name="affiliation" autocomplete="organization" placeholder="회사, 학교 등">
+                    <span>팀명<sup>*</sup></span>
+                    <input name="team-name" maxlength="40" required>
+                    <small>외부에 노출되는 닉네임입니다.</small>
                   </label>
                   <label class="field-wide">
-                    <span>팀명 <em>선택</em></span>
-                    <input name="team-name">
-                    <small>외부에 노출되는 닉네임입니다.</small>
+                    <span>소속 <em>선택</em></span>
+                    <input name="affiliation" autocomplete="organization" placeholder="회사, 학교 등">
                   </label>
                 </div>
 
@@ -1036,10 +1036,50 @@
 
               <div class="application-submit">
                 <button type="submit">신청서 제출하기</button>
-                <p class="form-status" aria-live="polite"></p>
+                <p class="form-status" role="alert" aria-live="assertive" tabindex="-1"></p>
               </div>
             </section>
           </form>
+        </div>
+      </section>
+
+      <section class="submit-success" data-submit-success hidden aria-labelledby="submit-success-title">
+        <canvas class="confetti-canvas" data-confetti aria-hidden="true"></canvas>
+        <div class="submit-success-inner shell">
+          <img class="submit-success-wordmark" src="assets/openai-wordmark.svg" alt="OpenAI">
+          <span class="submit-success-icon" aria-hidden="true">
+            <i data-lucide="check"></i>
+          </span>
+          <p class="kicker">SUBMISSION COMPLETE</p>
+          <h1 id="submit-success-title" tabindex="-1">성공적으로<br>제출되었습니다.</h1>
+          <p class="submit-success-message">
+            <strong data-success-team></strong>
+            참여해주셔서 감사합니다.<br>
+            본선 진출 안내와 다음 소식을 기다려주세요.
+          </p>
+          <div class="submit-success-actions">
+            <div class="submit-success-socials" aria-label="소식 확인">
+              <span>소식 확인</span>
+              <div>
+                <a href="#" aria-label="X">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M13.9 10.47 21.35 2h-1.77l-6.47 7.35L7.95 2H2l7.82 11.14L2 22h1.77l6.83-7.76L16.05 22H22l-8.1-11.53Zm-2.42 2.75-.79-1.1-6.31-8.82H7.1l5.08 7.11.79 1.1 6.61 9.24h-2.72l-5.38-7.53Z"/>
+                  </svg>
+                </a>
+                <a href="#" aria-label="Instagram">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2Zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4H7.8Zm8.95 1.55a1.45 1.45 0 1 1 0 2.9 1.45 1.45 0 0 1 0-2.9ZM12 7.2a4.8 4.8 0 1 1 0 9.6 4.8 4.8 0 0 1 0-9.6Zm0 2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z"/>
+                  </svg>
+                </a>
+                <a href="#" aria-label="YouTube">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M23.5 6.2a3.02 3.02 0 0 0-2.13-2.13C19.49 3.56 12 3.56 12 3.56s-7.49 0-9.37.51A3.02 3.02 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.13 2.13c1.88.51 9.37.51 9.37.51s7.49 0 9.37-.51a3.02 3.02 0 0 0 2.13-2.13A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8ZM9.6 15.56V8.44L15.84 12 9.6 15.56Z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+            <a class="submit-success-home" href="#home">홈으로</a>
+          </div>
         </div>
       </section>
 
@@ -1110,7 +1150,7 @@
       <template id="privacy-terms-content">
         <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 개인정보 처리 문안은 운영팀 및 법무 검토 후 교체됩니다.</p>
         <h3>1. 수집하는 개인정보</h3>
-        <p>필수 항목으로 Google 계정의 이름, 이메일 주소 및 프로필 사진, 신청자의 성명, 휴대전화번호, 이메일 주소, 생년월일과 팀 구성 정보를 수집합니다. 소속과 팀명은 선택 항목입니다.</p>
+        <p>필수 항목으로 Google 계정의 이름, 이메일 주소 및 프로필 사진, 신청자의 성명, 휴대전화번호, 이메일 주소, 생년월일, 팀명과 팀 구성 정보를 수집합니다. 소속은 선택 항목입니다.</p>
         <h3>2. 수집 및 이용 목적</h3>
         <p>수집된 정보는 참가 자격 확인, 신청 접수, 심사 진행, 본선 진출 안내, 행사 운영, 참가자 문의 대응과 리워드 지급을 위해 이용됩니다.</p>
         <h3>3. 보유 및 이용 기간</h3>

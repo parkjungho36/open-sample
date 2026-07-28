@@ -784,6 +784,7 @@ const submitPage = document.querySelector("#submit");
 if (submitPage) {
   const loginView = submitPage.querySelector("[data-submit-login]");
   const applicationView = submitPage.querySelector("[data-submit-application]");
+  const successView = submitPage.querySelector("[data-submit-success]");
   const googleSlot = submitPage.querySelector("[data-google-signin-slot]");
   const googleFallback = submitPage.querySelector("[data-google-signin-fallback]");
   const authStatus = submitPage.querySelector("[data-auth-status]");
@@ -821,6 +822,11 @@ if (submitPage) {
   const platformOptions = [...submitPage.querySelectorAll('input[name="game-platform"]')];
   const platformOtherWrap = submitPage.querySelector("[data-platform-other-wrap]");
   const platformOtherInput = submitPage.querySelector("[data-platform-other]");
+  const formStatus = applicationForm.querySelector(".form-status");
+  const submitButton = applicationForm.querySelector('button[type="submit"]');
+  const successTitle = submitPage.querySelector("#submit-success-title");
+  const successTeam = submitPage.querySelector("[data-success-team]");
+  const confettiCanvas = submitPage.querySelector("[data-confetti]");
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
@@ -857,6 +863,9 @@ if (submitPage) {
   let selectedCountryCode = "";
   let pendingCountryCode = "";
   let thumbnailObjectUrl = "";
+  let validationRules = [];
+  let hasSubmittedForm = false;
+  const touchedValidationKeys = new Set();
 
   function readStoredAccount() {
     try {
@@ -1075,6 +1084,9 @@ if (submitPage) {
     countryInput.value = pendingCountryCode;
     renderCountrySelection(pendingCountryCode);
     syncCountryConsent(false);
+    touchedValidationKeys.add("representative-country");
+    refreshValidationRule("representative-country", true);
+    refreshValidationRule("international-consent");
     closeCountryDialog();
   }
 
@@ -1132,10 +1144,352 @@ if (submitPage) {
     updatePlatformOther();
   }
 
+  function isValidUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === "http:" || url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+
+  function validateBirthDate(value) {
+    if (!value) return "생년월일을 입력해주세요.";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return "YYYY-MM-DD 형식으로 입력해주세요. 예: 1995-08-31";
+    }
+
+    const [year, month, day] = value.split("-").map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const isRealDate =
+      birthDate.getFullYear() === year &&
+      birthDate.getMonth() === month - 1 &&
+      birthDate.getDate() === day;
+    if (!isRealDate) return "실제 존재하는 날짜를 입력해주세요.";
+
+    const today = new Date();
+    let age = today.getFullYear() - year;
+    const birthdayHasPassed =
+      today.getMonth() > month - 1 ||
+      (today.getMonth() === month - 1 && today.getDate() >= day);
+    if (!birthdayHasPassed) age -= 1;
+    if (age < 19) return "만 19세 이상만 참가할 수 있습니다.";
+    return "";
+  }
+
+  function getRuleErrorElement(rule) {
+    if (rule.errorElement) {
+      rule.errorElement.classList.add("field-error");
+      return rule.errorElement;
+    }
+
+    const error = document.createElement("p");
+    error.className = "field-error";
+    error.hidden = true;
+    error.dataset.errorFor = rule.key;
+    if (rule.insertAfter) rule.container.insertAdjacentElement("afterend", error);
+    else rule.container.append(error);
+    rule.errorElement = error;
+    return error;
+  }
+
+  function connectRuleDescription(rule, error) {
+    if (!error.id) error.id = `error-${rule.key.replace(/[^a-z0-9-]/gi, "-")}`;
+    rule.targets.forEach((target) => {
+      const describedBy = new Set((target.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean));
+      describedBy.add(error.id);
+      target.setAttribute("aria-describedby", [...describedBy].join(" "));
+    });
+  }
+
+  function setRuleState(rule, message) {
+    const error = getRuleErrorElement(rule);
+    connectRuleDescription(rule, error);
+    const hasError = Boolean(message);
+
+    error.textContent = message;
+    error.hidden = !hasError;
+    rule.container.classList.toggle("has-error", hasError);
+    rule.targets.forEach((target) => {
+      target.setAttribute("aria-invalid", String(hasError));
+    });
+  }
+
+  function validateRule(rule, reveal = false) {
+    const isActive = rule.isActive ? rule.isActive() : true;
+    const message = isActive ? rule.validate() : "";
+    if (reveal || touchedValidationKeys.has(rule.key) || hasSubmittedForm) {
+      setRuleState(rule, message);
+    } else if (!isActive) {
+      setRuleState(rule, "");
+    }
+    return message;
+  }
+
+  function findValidationRule(key) {
+    return validationRules.find((rule) => rule.key === key);
+  }
+
+  function refreshValidationRule(key, reveal = false) {
+    const rule = findValidationRule(key);
+    if (rule) validateRule(rule, reveal);
+  }
+
+  function createValidationRules() {
+    const field = (name) => applicationForm.elements.namedItem(name);
+    const inputRule = (key, validate, options = {}) => {
+      const element = field(key);
+      return {
+        key,
+        targets: [element],
+        container: options.container || element.closest("label"),
+        focusTarget: options.focusTarget || element,
+        validate,
+        isActive: options.isActive
+      };
+    };
+
+    const eventConsent = submitPage.querySelector('[data-consent-trigger="event"]');
+    const privacyConsent = submitPage.querySelector('[data-consent-trigger="privacy"]');
+    const ageConfirmation = field("age-confirmation");
+    const teamSizeOptions = [...applicationForm.querySelectorAll('input[name="team-size"]')];
+    const teamSizeField = applicationForm.querySelector(".team-size");
+    const platformField = applicationForm.querySelector(".platform-field");
+
+    validationRules = [
+      {
+        key: "representative-country",
+        targets: [countryTrigger],
+        container: countryTrigger,
+        focusTarget: countryTrigger,
+        errorElement: countryError,
+        validate: () => countryInput.value ? "" : "대표자의 거주 국가를 선택해주세요.",
+        bindEvents: false
+      },
+      {
+        key: "event-consent",
+        targets: [eventConsent],
+        container: eventConsent,
+        focusTarget: eventConsent,
+        insertAfter: true,
+        validate: () => consentState.event ? "" : "참가 약관을 확인하고 동의해주세요.",
+        bindEvents: false
+      },
+      {
+        key: "privacy-consent",
+        targets: [privacyConsent],
+        container: privacyConsent,
+        focusTarget: privacyConsent,
+        insertAfter: true,
+        validate: () => consentState.privacy ? "" : "개인정보 수집·이용 동의서를 확인하고 동의해주세요.",
+        bindEvents: false
+      },
+      {
+        key: "international-consent",
+        targets: [internationalConsent],
+        container: internationalConsent,
+        focusTarget: internationalConsent,
+        insertAfter: true,
+        isActive: () => !internationalConsent.hidden,
+        validate: () => consentState.international ? "" : "개인정보 국외 이전 동의서를 확인하고 동의해주세요.",
+        bindEvents: false
+      },
+      {
+        key: "age-confirmation",
+        targets: [ageConfirmation],
+        container: ageConfirmation.closest(".consent-row"),
+        focusTarget: ageConfirmation,
+        insertAfter: true,
+        validate: () => ageConfirmation.checked ? "" : "만 19세 이상임을 확인해주세요."
+      },
+      inputRule("applicant-name", () => {
+        return field("applicant-name").value.trim() ? "" : "성명을 입력해주세요.";
+      }),
+      inputRule("phone", () => {
+        const value = field("phone").value.trim();
+        if (!value) return "휴대전화번호를 입력해주세요.";
+        return /^010-\d{4}-\d{4}$/.test(value)
+          ? ""
+          : "010-1234-5678 형식으로 입력해주세요.";
+      }),
+      inputRule("email", () => {
+        const value = field("email").value.trim();
+        if (!value) return "이메일 주소를 입력해주세요.";
+        return field("email").validity.typeMismatch
+          ? "올바른 이메일 주소를 입력해주세요."
+          : "";
+      }),
+      inputRule("birth-date", () => validateBirthDate(field("birth-date").value.trim())),
+      inputRule("team-name", () => {
+        return field("team-name").value.trim() ? "" : "외부에 표시할 팀명을 입력해주세요.";
+      }),
+      {
+        key: "team-size",
+        targets: teamSizeOptions,
+        container: teamSizeField,
+        focusTarget: teamSizeOptions[0],
+        validate: () => teamSizeOptions.some((option) => option.checked)
+          ? ""
+          : "팀 구성 인원을 선택해주세요."
+      },
+      {
+        key: "game-thumbnail",
+        targets: [thumbnailInput],
+        container: applicationForm.querySelector(".thumbnail-field"),
+        focusTarget: thumbnailInput,
+        errorElement: thumbnailStatus,
+        validate: () => {
+          const file = thumbnailInput.files?.[0];
+          if (!file) return "게임 썸네일을 업로드해주세요.";
+          if (!["image/jpeg", "image/png"].includes(file.type)) {
+            return "JPG 또는 PNG 이미지만 업로드할 수 있습니다.";
+          }
+          return file.size <= 10 * 1024 * 1024
+            ? ""
+            : "파일 크기는 최대 10MB까지 가능합니다.";
+        }
+      },
+      inputRule("game-title", () => {
+        return field("game-title").value.trim() ? "" : "게임 제목을 입력해주세요.";
+      }),
+      inputRule("game-description", () => {
+        return field("game-description").value.trim() ? "" : "게임 소개를 입력해주세요.";
+      }),
+      {
+        key: "game-platform",
+        targets: platformOptions,
+        container: platformField,
+        focusTarget: platformOptions[0],
+        validate: () => platformOptions.some((option) => option.checked)
+          ? ""
+          : "게임 플랫폼을 하나 선택해주세요."
+      },
+      inputRule("game-platform-other", () => {
+        return platformOtherInput.value.trim() ? "" : "기타 플랫폼을 직접 입력해주세요.";
+      }, {
+        container: platformOtherWrap,
+        isActive: () => !platformOtherWrap.hidden
+      }),
+      inputRule("playable-game-link", () => {
+        const value = field("playable-game-link").value.trim();
+        if (!value) return "플레이 가능한 게임 링크를 입력해주세요.";
+        return isValidUrl(value) ? "" : "http:// 또는 https://로 시작하는 링크를 입력해주세요.";
+      }),
+      inputRule("demo-video-link", () => {
+        const value = field("demo-video-link").value.trim();
+        return !value || isValidUrl(value)
+          ? ""
+          : "http:// 또는 https://로 시작하는 영상 링크를 입력해주세요.";
+      })
+    ];
+  }
+
+  function bindValidationFeedback() {
+    validationRules.forEach((rule) => {
+      if (rule.bindEvents === false) return;
+      rule.targets.forEach((target) => {
+        const isChoice = target.matches('input[type="checkbox"], input[type="radio"], input[type="file"]');
+        const primaryEvent = isChoice ? "change" : "input";
+
+        target.addEventListener(primaryEvent, () => {
+          if (isChoice) touchedValidationKeys.add(rule.key);
+          validateRule(rule, isChoice || touchedValidationKeys.has(rule.key) || hasSubmittedForm);
+          formStatus.classList.remove("is-success");
+        });
+        target.addEventListener("blur", () => {
+          touchedValidationKeys.add(rule.key);
+          validateRule(rule, true);
+        });
+      });
+    });
+  }
+
+  function resetValidationFeedback() {
+    hasSubmittedForm = false;
+    touchedValidationKeys.clear();
+    validationRules.forEach((rule) => setRuleState(rule, ""));
+    formStatus.textContent = "";
+    formStatus.className = "form-status";
+    submitButton.disabled = false;
+  }
+
+  function runConfetti() {
+    if (!confettiCanvas || reducedMotion) return;
+    const context = confettiCanvas.getContext("2d");
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const colors = ["#111111", "#ff6b57", "#18a999", "#2684ff", "#f5c542", "#8b5cf6"];
+    const particles = Array.from({ length: 150 }, (_, index) => {
+      const angle = Math.PI * (.18 + Math.random() * .64);
+      const speed = 7 + Math.random() * 12;
+      return {
+        x: width * (.36 + Math.random() * .28),
+        y: Math.min(height * .38, 320),
+        vx: Math.cos(angle) * speed * (index % 2 ? 1 : -1),
+        vy: -Math.sin(angle) * speed - 4,
+        size: 5 + Math.random() * 8,
+        rotation: Math.random() * Math.PI,
+        spin: (Math.random() - .5) * .3,
+        color: colors[index % colors.length]
+      };
+    });
+    const startedAt = performance.now();
+
+    confettiCanvas.width = Math.round(width * pixelRatio);
+    confettiCanvas.height = Math.round(height * pixelRatio);
+    confettiCanvas.style.width = `${width}px`;
+    confettiCanvas.style.height = `${height}px`;
+    confettiCanvas.classList.add("is-active");
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+    function drawFrame(now) {
+      context.clearRect(0, 0, width, height);
+      particles.forEach((particle) => {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += .24;
+        particle.vx *= .992;
+        particle.rotation += particle.spin;
+        context.save();
+        context.translate(particle.x, particle.y);
+        context.rotate(particle.rotation);
+        context.fillStyle = particle.color;
+        context.fillRect(-particle.size / 2, -particle.size / 3, particle.size, particle.size * .62);
+        context.restore();
+      });
+
+      if (now - startedAt < 2600) {
+        window.requestAnimationFrame(drawFrame);
+      } else {
+        context.clearRect(0, 0, width, height);
+        confettiCanvas.classList.remove("is-active");
+      }
+    }
+
+    window.requestAnimationFrame(drawFrame);
+  }
+
+  function showSubmissionSuccess() {
+    const teamName = applicationForm.elements.namedItem("team-name").value.trim();
+    successTeam.textContent = teamName ? `${teamName}의 신청서가 접수되었습니다.` : "";
+    applicationView.hidden = true;
+    successView.hidden = false;
+    submitButton.disabled = true;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => {
+      successTitle.focus({ preventScroll: true });
+      runConfetti();
+    });
+  }
+
   function updateConsentRow(key, agreed) {
     consentState[key] = agreed;
     const trigger = submitPage.querySelector(`[data-consent-trigger="${key}"]`);
     trigger?.setAttribute("aria-pressed", String(agreed));
+    if (touchedValidationKeys.has(`${key}-consent`) || hasSubmittedForm) {
+      refreshValidationRule(`${key}-consent`, true);
+    }
   }
 
   function updateTermsProgress() {
@@ -1186,11 +1540,15 @@ if (submitPage) {
     option.addEventListener("change", updatePlatformOther);
   });
   resetProjectFields();
+  createValidationRules();
+  bindValidationFeedback();
+  resetValidationFeedback();
 
   submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
       const key = trigger.dataset.consentTrigger;
       if (consentState[key]) {
+        touchedValidationKeys.add(`${key}-consent`);
         updateConsentRow(key, false);
         return;
       }
@@ -1202,6 +1560,7 @@ if (submitPage) {
   termsClose.addEventListener("click", closeTerms);
   termsAccept.addEventListener("click", () => {
     if (termsAccept.disabled || !activeConsent) return;
+    touchedValidationKeys.add(`${activeConsent}-consent`);
     updateConsentRow(activeConsent, true);
     closeTerms();
   });
@@ -1239,41 +1598,38 @@ if (submitPage) {
     renderCountrySelection("");
     countryTrigger.setAttribute("aria-invalid", "false");
     countryError.hidden = true;
+    resetValidationFeedback();
     window.google?.accounts?.id?.disableAutoSelect();
     setAccount(null);
   });
 
   applicationForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    const status = applicationForm.querySelector(".form-status");
-    const countryCode = syncCountryConsent(true);
-    const needsInternationalConsent = Boolean(countryCode && countryCode !== "KR");
+    hasSubmittedForm = true;
+    syncCountryConsent(false);
+    const invalidRules = validationRules
+      .map((rule) => ({ rule, message: validateRule(rule, true) }))
+      .filter(({ message }) => Boolean(message));
 
-    if (
-      !countryCode ||
-      !consentState.event ||
-      !consentState.privacy ||
-      (needsInternationalConsent && !consentState.international)
-    ) {
-      status.textContent = needsInternationalConsent && !consentState.international
-        ? "개인정보 국외 이전 동의서를 포함한 필수 확인 항목을 완료해주세요."
-        : "거주 국가와 필수 동의 항목을 확인해주세요.";
-      if (!countryCode) countryTrigger.focus({ preventScroll: true });
-      applicationForm.reportValidity();
-      submitPage.querySelector(".consent-section")?.scrollIntoView({
+    if (invalidRules.length) {
+      const firstInvalid = invalidRules[0].rule;
+      formStatus.textContent = `필수 항목을 입력하고 형식을 확인해주세요. 표시된 ${invalidRules.length}개 항목을 확인해주세요.`;
+      formStatus.classList.add("is-error");
+      formStatus.classList.remove("is-success");
+      firstInvalid.container.scrollIntoView({
         behavior: reducedMotion ? "auto" : "smooth",
-        block: "start"
+        block: "center"
       });
+      window.setTimeout(() => {
+        firstInvalid.focusTarget?.focus({ preventScroll: true });
+      }, reducedMotion ? 0 : 350);
       return;
     }
 
-    if (!applicationForm.checkValidity()) {
-      applicationForm.reportValidity();
-      status.textContent = "필수 항목과 입력 형식을 확인해주세요.";
-      return;
-    }
-
-    status.textContent = "신청서 입력 내용이 확인되었습니다. 실제 접수 저장 시스템은 추후 연결됩니다.";
+    formStatus.textContent = "모든 필수 항목을 확인했습니다.";
+    formStatus.classList.remove("is-error");
+    formStatus.classList.add("is-success");
+    showSubmissionSuccess();
   });
 
   const googleScript = document.querySelector("#google-identity-services");
