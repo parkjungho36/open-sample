@@ -841,6 +841,12 @@ if (submitPage) {
   const discardClose = submitPage.querySelector("[data-discard-close]");
   const discardCancel = submitPage.querySelector("[data-discard-cancel]");
   const discardConfirm = submitPage.querySelector("[data-discard-confirm]");
+  const discardKicker = submitPage.querySelector("[data-discard-kicker]");
+  const discardTitle = submitPage.querySelector("[data-discard-title]");
+  const discardMessage = submitPage.querySelector("[data-discard-message]");
+  const discardNotice = submitPage.querySelector("[data-discard-notice]");
+  const discardNoticeTitle = submitPage.querySelector("[data-discard-notice-title]");
+  const discardNoticeBody = submitPage.querySelector("[data-discard-notice-body]");
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
@@ -1527,8 +1533,32 @@ if (submitPage) {
 
   function openDiscardDialog(action) {
     if (!discardDialog || discardDialog.open) return;
+    const hasDraft = action.hasDraft ?? hasUnsavedApplication();
+    const isSwitch = action.type === "switch";
+
     pendingDiscardAction = action;
-    discardConfirm.textContent = action.type === "switch" ? "계정 변경" : "페이지 나가기";
+    discardDialog.classList.toggle("has-unsaved-content", hasDraft);
+    discardKicker.textContent = isSwitch
+      ? (hasDraft ? "UNSAVED APPLICATION" : "ACCOUNT CHANGE")
+      : "LEAVE APPLICATION";
+    discardTitle.textContent = isSwitch
+      ? (hasDraft ? "작성 중인 내용을 지우고 계정을 변경할까요?" : "계정을 변경하시겠습니까?")
+      : "신청서 작성을 중단하고 나갈까요?";
+    discardMessage.textContent = isSwitch
+      ? (hasDraft
+        ? "계정을 변경하면 지금 작성 중인 신청서는 저장되지 않습니다."
+        : "현재 Google 계정에서 로그아웃한 뒤 다른 계정으로 다시 로그인합니다.")
+      : "페이지를 떠나면 지금까지 작성한 신청서는 저장되지 않습니다.";
+    discardNoticeTitle.textContent = hasDraft ? "저장되지 않는 항목" : "현재 로그인된 계정";
+    discardNoticeBody.textContent = hasDraft
+      ? "참가자 정보, 프로젝트 정보, 업로드한 파일과 동의 상태"
+      : (readStoredAccount()?.email || "로그인된 Google 계정");
+    discardNotice
+      .querySelector("[data-lucide]")
+      ?.setAttribute("data-lucide", hasDraft ? "triangle-alert" : "circle-user-round");
+    window.lucide?.createIcons();
+    discardCancel.textContent = hasDraft ? "계속 작성" : "현재 계정 유지";
+    discardConfirm.textContent = isSwitch ? "계정 변경" : "페이지 나가기";
     discardDialog.showModal();
     document.body.classList.add("terms-modal-open");
     window.requestAnimationFrame(() => discardCancel.focus());
@@ -1564,11 +1594,10 @@ if (submitPage) {
   }
 
   function requestAccountSwitch() {
-    if (hasUnsavedApplication()) {
-      openDiscardDialog({ type: "switch" });
-      return;
-    }
-    performSwitchAccount();
+    openDiscardDialog({
+      type: "switch",
+      hasDraft: hasUnsavedApplication()
+    });
   }
 
   routeLeaveGuard = (fromRoute, toRoute) => {
@@ -1577,7 +1606,7 @@ if (submitPage) {
       return false;
     }
     if (fromRoute !== "submit" || toRoute === "submit" || !hasUnsavedApplication()) return false;
-    openDiscardDialog({ type: "route", routeId: toRoute });
+    openDiscardDialog({ type: "route", routeId: toRoute, hasDraft: true });
     return true;
   };
 
