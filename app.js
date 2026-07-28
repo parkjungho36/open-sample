@@ -7,6 +7,22 @@ let routeLeaveGuard = null;
 
 window.lucide?.createIcons();
 
+const footerLanguageSelect = document.querySelector("[data-footer-language]");
+const footerLanguageStatus = document.querySelector(".footer-language-status");
+
+footerLanguageSelect?.addEventListener("change", () => {
+  if (footerLanguageSelect.value === "ko") {
+    if (footerLanguageStatus) footerLanguageStatus.textContent = "";
+    return;
+  }
+
+  const selectedLanguage = footerLanguageSelect.options[footerLanguageSelect.selectedIndex]?.text || "";
+  if (footerLanguageStatus) {
+    footerLanguageStatus.textContent = `${selectedLanguage} 지원은 마지막 다국어 적용 단계에서 제공됩니다.`;
+  }
+  footerLanguageSelect.value = "ko";
+});
+
 function syncHeaderTheme() {
   const heroSection = document.querySelector(".hero");
   const homePage = document.querySelector("#home");
