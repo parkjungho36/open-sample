@@ -1825,7 +1825,10 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 }
 .event-details-snapshot > div,
 .event-details-snapshot > div:first-child {
+  min-height: 72px;
   padding: 17px 18px;
+  display: flex;
+  align-items: center;
   background: var(--soft);
   border: 0;
   border-radius: .38rem;
@@ -1910,7 +1913,6 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   padding-top: clamp(52px, 6vw, 78px);
   padding-bottom: clamp(40px, 4.5vw, 58px);
 }
-.event-details-hero > .kicker { margin-bottom: clamp(24px, 3vw, 34px); }
 .event-details-hero-grid {
   display: grid;
   grid-template-columns: minmax(250px, .86fr) minmax(360px, 1.24fr) auto;
@@ -2111,9 +2113,6 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   padding-bottom: clamp(46px, 5vw, 68px);
   display: flex;
   flex-direction: column;
-}
-.details-hero > .kicker {
-  margin-bottom: clamp(22px, 2.8vw, 34px);
 }
 .details-hero-grid {
   grid-template-columns: minmax(270px, .9fr) minmax(350px, 1.2fr) auto;
