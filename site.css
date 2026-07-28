@@ -1949,26 +1949,18 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   grid-template-columns: minmax(190px, .42fr) minmax(0, 1fr);
   gap: clamp(32px, 5vw, 72px);
   padding: clamp(30px, 4vw, 52px);
-  align-items: end;
+  align-items: center;
   color: var(--ink);
   background: var(--soft);
   border-radius: .38rem;
 }
-.eligibility-size { display: flex; flex-direction: column; }
+.eligibility-size { display: block; }
 .eligibility-size strong {
   font-size: clamp(64px, 8vw, 108px);
   font-weight: 300;
   letter-spacing: -.08em;
   line-height: .8;
 }
-.eligibility-size span {
-  margin-top: 14px;
-  color: #777;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .1em;
-}
-.eligibility-card .kicker { margin-bottom: 13px; color: #247d87; }
 .eligibility-card h3 {
   margin: 0 0 12px;
   font-size: clamp(27px, 3vw, 40px);
@@ -2185,6 +2177,12 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   gap: clamp(20px, 3vw, 38px);
   align-items: end;
   margin-bottom: clamp(22px, 2.8vw, 32px);
+}
+.event-details-overview .details-section-heading {
+  align-items: start;
+}
+.event-details-overview .details-section-heading .details-index {
+  line-height: .9;
 }
 .details-section-heading .details-index {
   color: var(--ink);
@@ -2629,7 +2627,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   .event-details-tagline { font-size: 25px; }
   .eligibility-card,
   .judging-layout { grid-template-columns: 1fr; }
-  .eligibility-card { gap: 42px; }
+  .eligibility-card { gap: 28px; }
   .eligibility-size strong { font-size: 78px; }
   .judging-layout { gap: 10px; }
   .criteria-grid article { min-height: 132px; }
