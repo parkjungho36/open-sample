@@ -2090,8 +2090,10 @@ const setDetailsFoldOpen = async (details, shouldOpen) => {
   const startHeight = details.offsetHeight;
   if (shouldOpen) details.open = true;
   const endHeight = shouldOpen ? details.offsetHeight : summary.offsetHeight;
-  const duration = 460;
-  const easing = "cubic-bezier(.22, 1, .36, 1)";
+  const duration = shouldOpen ? 440 : 400;
+  const easing = shouldOpen
+    ? "cubic-bezier(.22, 1, .36, 1)"
+    : "cubic-bezier(.4, 0, .2, 1)";
 
   const shellAnimation = details.animate(
     { height: [`${startHeight}px`, `${endHeight}px`] },
@@ -2099,9 +2101,9 @@ const setDetailsFoldOpen = async (details, shouldOpen) => {
   );
   const bodyAnimation = body.animate(
     shouldOpen
-      ? { opacity: [0, 1], transform: ["translateY(-18px)", "translateY(0)"] }
-      : { opacity: [1, 0], transform: ["translateY(0)", "translateY(-14px)"] },
-    { duration: shouldOpen ? 360 : 280, easing, fill: "both" }
+      ? { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0 0)"] }
+      : { clipPath: ["inset(0 0 0 0)", "inset(0 0 100% 0)"] },
+    { duration, easing, fill: "both" }
   );
 
   await Promise.allSettled([shellAnimation.finished, bodyAnimation.finished]);

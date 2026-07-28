@@ -1919,7 +1919,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 }
 .details-fold-body {
   background: #fff;
-  transform-origin: top;
+  overflow: clip;
 }
 .details-fold[open] > .details-fold-body { border-top: 0; }
 .details-fold-body .details-content > section:first-child { border-top: 0; }
