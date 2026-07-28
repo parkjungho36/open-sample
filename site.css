@@ -884,6 +884,12 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   border-color: #fff;
   transform: translateY(-2px);
 }
+.home-closing-news:hover .home-closing-socials a:hover,
+.home-closing-news:focus-within .home-closing-socials a:focus-visible {
+  color: var(--ink);
+  background: #fff;
+  border-color: #fff;
+}
 
 .simple { padding-top: 120px; padding-bottom: 140px; }
 .simple h1 { font-size: clamp(54px, 7vw, 92px); font-weight: 400; letter-spacing: -.08em; margin: 0; }
