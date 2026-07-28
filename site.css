@@ -716,7 +716,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   max-width: 430px;
   margin: 0 0 8px;
   color: #aaa;
-  font-size: clamp(15px, 1.35vw, 19px);
+  font-size: 15px;
   line-height: 1.65;
   word-break: keep-all;
 }
