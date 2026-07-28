@@ -1280,8 +1280,9 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   top: var(--nav-height);
   z-index: 8;
   border: 0;
-  background: rgba(255, 255, 255, .88);
-  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, .62);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 .details-anchor-inner {
   display: flex;
@@ -1407,9 +1408,13 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
 }
 .details-fold-action {
   display: flex;
+  width: 148px;
+  min-width: 148px;
   padding: 4px 5px 4px 12px;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
+  box-sizing: border-box;
   color: #fff;
   background: var(--ink);
   border: 1px solid var(--ink);
@@ -1606,11 +1611,16 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
 }
 .judging-table tbody tr.is-criterion-active {
   color: var(--ink);
-  background: var(--soft);
+  background: #dcf3f5;
 }
 .judging-table tbody tr.is-criterion-active th,
-.judging-table tbody tr.is-criterion-active th small { color: var(--ink); }
-.judging-table tbody tr.is-criterion-active td { color: #247d87; }
+.judging-table tbody tr.is-criterion-active td { background: #dcf3f5; }
+.judging-table tbody tr.is-criterion-active th {
+  box-shadow: inset 3px 0 0 var(--details-accent);
+}
+.judging-table tbody tr.is-criterion-active th,
+.judging-table tbody tr.is-criterion-active th small { color: #155e66; }
+.judging-table tbody tr.is-criterion-active td { color: #087682; }
 .judging-table tbody tr:focus-visible,
 .criteria-grid article:focus-visible {
   outline: 2px solid var(--details-accent);
@@ -1643,10 +1653,11 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
 }
 .criteria-grid article.is-criterion-active {
   color: var(--ink);
-  background: var(--soft);
+  background: #dcf3f5;
+  box-shadow: inset 0 0 0 2px var(--details-accent);
 }
-.criteria-grid article.is-criterion-active span { color: #247d87; }
-.criteria-grid article.is-criterion-active p { color: #555; }
+.criteria-grid article.is-criterion-active span { color: #087682; }
+.criteria-grid article.is-criterion-active p { color: #155e66; }
 .criteria-grid article:last-child { grid-column: 1 / -1; }
 .criteria-grid span {
   color: #aaa;
@@ -2316,6 +2327,8 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   .details-anchor-inner { gap: 0; }
   .details-anchor-nav a { font-size: 11px; }
   .details-fold-action {
+    width: 32px;
+    min-width: 32px;
     padding: 0;
     gap: 0;
     background: transparent;
