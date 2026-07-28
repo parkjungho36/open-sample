@@ -1172,30 +1172,6 @@ if (submitPage) {
     }
   }
 
-  function validateBirthDate(value) {
-    if (!value) return "생년월일을 입력해주세요.";
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-      return "YYYY-MM-DD 형식으로 입력해주세요. 예: 1995-08-31";
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const birthDate = new Date(year, month - 1, day);
-    const isRealDate =
-      birthDate.getFullYear() === year &&
-      birthDate.getMonth() === month - 1 &&
-      birthDate.getDate() === day;
-    if (!isRealDate) return "실제 존재하는 날짜를 입력해주세요.";
-
-    const today = new Date();
-    let age = today.getFullYear() - year;
-    const birthdayHasPassed =
-      today.getMonth() > month - 1 ||
-      (today.getMonth() === month - 1 && today.getDate() >= day);
-    if (!birthdayHasPassed) age -= 1;
-    if (age < 19) return "만 19세 이상만 참가할 수 있습니다.";
-    return "";
-  }
-
   function getRuleErrorElement(rule) {
     if (rule.errorElement) {
       rule.errorElement.classList.add("field-error");
@@ -1324,13 +1300,6 @@ if (submitPage) {
       inputRule("applicant-name", () => {
         return field("applicant-name").value.trim() ? "" : "성명을 입력해주세요.";
       }),
-      inputRule("phone", () => {
-        const value = field("phone").value.trim();
-        if (!value) return "휴대전화번호를 입력해주세요.";
-        return /^010-\d{4}-\d{4}$/.test(value)
-          ? ""
-          : "010-1234-5678 형식으로 입력해주세요.";
-      }),
       inputRule("email", () => {
         const value = field("email").value.trim();
         if (!value) return "이메일 주소를 입력해주세요.";
@@ -1338,7 +1307,6 @@ if (submitPage) {
           ? "올바른 이메일 주소를 입력해주세요."
           : "";
       }),
-      inputRule("birth-date", () => validateBirthDate(field("birth-date").value.trim())),
       inputRule("team-name", () => {
         return field("team-name").value.trim() ? "" : "외부에 표시할 팀명을 입력해주세요.";
       }),
