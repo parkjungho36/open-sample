@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=closing-light-v1">
+  <link rel="stylesheet" href="site.css?v=home-cta-routes-v1">
 </head>
 <body>
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -25,7 +25,7 @@
         <a href="#submit" data-route="submit">제출하기</a>
         <a href="#gallery" data-route="gallery">작품보기</a>
       </nav>
-      <a class="nav-cta" href="#apply">참여하기</a>
+      <a class="nav-cta" href="#submit">참여하기</a>
     </div>
   </header>
 
@@ -72,7 +72,7 @@
             <h3>First Challenge<br>Online warm-up</h3>
             <p>온라인 사전 챌린지를 통해 본선에 진출할 40개 작품이 선정됩니다.<br>본선 진출자는 오프라인 게임 해커톤에 초대됩니다.</p>
             <div class="feature-actions">
-              <a class="feature-cta" href="#apply">참여하기</a>
+              <a class="feature-cta" href="#apply:track-1">상세보기</a>
             </div>
           </article>
           <article>
@@ -116,7 +116,7 @@
                 <p>Track 1 공개 - 접수 페이지를 통해 제출</p>
               </div>
               <div class="schedule-action-cell">
-                <a class="feature-cta schedule-cta" href="#apply">참여하기</a>
+                <a class="feature-cta schedule-cta" href="#submit">참여하기</a>
               </div>
             </article>
             <article>
@@ -214,7 +214,7 @@
                 <h3>Codex로 게임 만들기</h3>
                 <p>아이디어를 플레이 가능한 데모 게임으로 완성하세요.</p>
               </div>
-              <a class="how-cta" href="#apply">상세정보</a>
+              <a class="how-cta" href="#apply:track-1">상세보기</a>
             </article>
           </li>
           <li>
@@ -248,7 +248,10 @@
                 <h3>오프라인 본선 참가</h3>
                 <p>게임을 직접 발표·시연하고, 현장 챌린지인 Track 2에 도전합니다.</p>
               </div>
-              <span class="how-location">SEOUL · IN PERSON</span>
+              <span class="how-location" aria-label="서울 현장 행사">
+                <i data-lucide="map-pin" aria-hidden="true"></i>
+                <span>SEOUL · IN PERSON</span>
+              </span>
             </article>
           </li>
         </ol>

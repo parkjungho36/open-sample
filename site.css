@@ -575,7 +575,8 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   align-items: center;
   gap: 9px;
 }
-.how-trophy svg {
+.how-trophy svg,
+.how-location svg {
   width: 32px;
   height: 32px;
   fill: none;
@@ -590,7 +591,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   line-height: 1;
 }
 .how-trophy span,
-.how-location {
+.how-location span {
   color: #777;
   font-size: 9px;
   font-weight: 700;
@@ -599,6 +600,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .how-location {
   display: flex;
   align-items: center;
+  gap: 9px;
   min-height: 32px;
   margin-top: 24px;
 }
