@@ -1985,12 +1985,42 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   background: var(--soft);
   border-radius: .38rem;
 }
-.eligibility-size { display: block; }
-.eligibility-size strong {
-  font-size: clamp(64px, 8vw, 108px);
-  font-weight: 300;
-  letter-spacing: -.08em;
-  line-height: .8;
+.eligibility-size {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+}
+.eligibility-person {
+  width: clamp(66px, 6.3vw, 84px);
+  aspect-ratio: 1;
+  margin-left: -14px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 1;
+  border: 1px solid #bcbcbc;
+  border-radius: 50%;
+  color: #737373;
+  background: #fff;
+}
+.eligibility-person:first-child { margin-left: 0; }
+.eligibility-person svg {
+  width: 42%;
+  height: 42%;
+  stroke-width: 1.45;
+}
+.eligibility-person-lead {
+  width: clamp(82px, 7.6vw, 102px);
+  z-index: 3;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.eligibility-person-accent {
+  z-index: 2;
+  border-color: var(--details-accent);
+  color: #087682;
+  background: #dcf3f5;
 }
 .eligibility-card h3 {
   margin: 0 0 12px;
@@ -2665,7 +2695,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   .eligibility-card,
   .judging-layout { grid-template-columns: 1fr; }
   .eligibility-card { gap: 28px; }
-  .eligibility-size strong { font-size: 78px; }
+  .eligibility-size { min-height: 96px; }
   .judging-layout { gap: 10px; }
   .criteria-grid article { min-height: 132px; }
   .details-hero {
