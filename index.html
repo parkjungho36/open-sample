@@ -920,13 +920,9 @@
               <fieldset class="applicant-fields">
                 <legend>신청자 인적 사항</legend>
                 <div class="application-form-grid">
-                  <label>
+                  <label class="field-wide">
                     <span>성명<sup>*</sup></span>
                     <input name="applicant-name" autocomplete="name" required>
-                  </label>
-                  <label>
-                    <span>이메일 주소<sup>*</sup></span>
-                    <input name="email" type="email" autocomplete="email" data-applicant-email required>
                   </label>
                   <label class="field-wide">
                     <span>팀명<sup>*</sup></span>
@@ -1218,7 +1214,7 @@
       <template id="privacy-terms-content">
         <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 개인정보 처리 문안은 운영팀 및 법무 검토 후 교체됩니다.</p>
         <h3>1. 수집하는 개인정보</h3>
-        <p>필수 항목으로 Google 계정의 이름, 이메일 주소 및 프로필 사진, 신청자의 성명, 이메일 주소, 팀명과 팀 구성 정보를 수집합니다. 소속은 선택 항목입니다.</p>
+        <p>필수 항목으로 Google 계정의 이름, 이메일 주소 및 프로필 사진, 신청자의 성명, 팀명과 팀 구성 정보를 수집합니다. 소속은 선택 항목입니다.</p>
         <h3>2. 수집 및 이용 목적</h3>
         <p>수집된 정보는 참가 자격 확인, 신청 접수, 심사 진행, 본선 진출 안내, 행사 운영, 참가자 문의 대응과 리워드 지급을 위해 이용됩니다.</p>
         <h3>3. 보유 및 이용 기간</h3>
@@ -1236,7 +1232,7 @@
       <template id="international-transfer-terms-content">
         <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 개인정보 국외 이전 문안은 운영팀 및 법무 검토 후 교체됩니다.</p>
         <h3>1. 국외 이전되는 개인정보</h3>
-        <p>Google 계정에 연결된 이름, 이메일 주소 및 프로필 사진과 신청서에 입력한 성명, 이메일 주소, 거주 국가 및 팀 구성 정보를 이전할 수 있습니다.</p>
+        <p>Google 계정에 연결된 이름, 이메일 주소 및 프로필 사진과 신청서에 입력한 성명, 거주 국가 및 팀 구성 정보를 이전할 수 있습니다.</p>
         <h3>2. 이전받는 자 및 이전 국가</h3>
         <p>행사 신청 접수, 참가자 관리와 운영 지원을 위해 대한민국에 위치한 공동 주최사 및 행사 운영 수탁사에 개인정보가 이전될 수 있습니다. 구체적인 이전받는 자는 최종 개인정보 처리 문안에서 안내합니다.</p>
         <h3>3. 이전 목적</h3>
@@ -1287,6 +1283,6 @@
 
   <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=submission-guide-v1"></script>
+  <script src="app.js?v=applicant-email-v1"></script>
 </body>
 </html>
