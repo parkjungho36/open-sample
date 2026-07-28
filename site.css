@@ -2210,10 +2210,16 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   margin-bottom: clamp(22px, 2.8vw, 32px);
 }
 .event-details-overview .details-section-heading {
-  align-items: start;
+  align-items: baseline;
 }
 .event-details-overview .details-section-heading .details-index {
   line-height: .9;
+}
+@media (min-width: 761px) {
+  .event-details-overview .details-section-heading {
+    grid-template-columns: clamp(78px, 7vw, 94px) minmax(0, 1fr);
+    gap: clamp(16px, 2vw, 28px);
+  }
 }
 .details-section-heading .details-index {
   color: var(--ink);
