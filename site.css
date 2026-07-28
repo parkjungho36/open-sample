@@ -3116,8 +3116,8 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
 .project-form-grid,
 .bonus-submissions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 30px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 46px;
 }
 .project-field input:not([type="file"]),
 .project-field textarea,
@@ -3235,10 +3235,19 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   font-weight: 600;
 }
 .main-submission {
-  padding-block: 36px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--line);
+  padding: 44px 42px 40px;
+  border: 0;
+  color: #fff;
+  background: #111;
 }
+.main-submission .submission-type { color: #aaa; }
+.main-submission .project-label { color: #fff; }
+.main-submission input:not([type="file"]) {
+  color: #fff;
+  border-color: #707070;
+}
+.main-submission input:not([type="file"])::placeholder { color: #999; }
+.main-submission input:not([type="file"]):focus { border-color: #fff; }
 .submission-type {
   margin-bottom: 18px;
   color: #777;
@@ -3259,6 +3268,7 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   line-height: 1.7;
   word-break: keep-all;
 }
+.main-submission .submission-guidance p { color: #ddd; }
 .submission-guidance ul {
   margin: 0;
   padding: 0;
@@ -3273,6 +3283,7 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   font-size: 11px;
   line-height: 1.55;
 }
+.main-submission .submission-guidance li { color: #aaa; }
 .submission-guidance li::before {
   content: "";
   width: 5px;
@@ -3283,6 +3294,7 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   border-radius: 50%;
   background: var(--ink);
 }
+.main-submission .submission-guidance li::before { background: #fff; }
 .submission-guidance a {
   width: max-content;
   margin-top: 8px;
@@ -3293,6 +3305,10 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   border-bottom: 1px solid var(--ink);
   font-size: 11px;
   font-weight: 600;
+}
+.main-submission .submission-guidance a {
+  color: #fff;
+  border-color: #fff;
 }
 .submission-guidance a svg {
   width: 13px;
@@ -3538,6 +3554,7 @@ body.terms-modal-open { overflow: hidden; }
   }
   .platform-other-option { grid-column: auto; }
   .platform-options label > span { min-height: 104px; }
+  .main-submission { padding: 32px 24px 30px; }
   .submission-guidance { gap: 18px; }
   .terms-dialog header { padding: 22px 20px 18px; }
   .terms-scroll { padding: 22px 20px 52px; }
