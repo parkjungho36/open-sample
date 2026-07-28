@@ -2054,6 +2054,47 @@ document.querySelectorAll("[data-scroll-target]").forEach((button) => {
 });
 
 const detailsAnchorLinks = [...document.querySelectorAll("[data-details-anchor]")];
+const detailsFolds = [...document.querySelectorAll(".details-fold")];
+const animatingDetailsFolds = new WeakSet();
+
+const setDetailsFoldOpen = async (details, shouldOpen) => {
+  if (!(details instanceof HTMLDetailsElement) || details.open === shouldOpen) return;
+
+  const summary = details.querySelector(":scope > summary");
+  const body = details.querySelector(":scope > .details-fold-body");
+  if (!summary || !body || reducedMotion || typeof details.animate !== "function") {
+    details.open = shouldOpen;
+    return;
+  }
+  if (animatingDetailsFolds.has(details)) return;
+
+  animatingDetailsFolds.add(details);
+  details.classList.add("is-animating", shouldOpen ? "is-opening" : "is-closing");
+
+  const startHeight = details.offsetHeight;
+  if (shouldOpen) details.open = true;
+  const endHeight = shouldOpen ? details.offsetHeight : summary.offsetHeight;
+  const duration = 460;
+  const easing = "cubic-bezier(.22, 1, .36, 1)";
+
+  const shellAnimation = details.animate(
+    { height: [`${startHeight}px`, `${endHeight}px`] },
+    { duration, easing, fill: "both" }
+  );
+  const bodyAnimation = body.animate(
+    shouldOpen
+      ? { opacity: [0, 1], transform: ["translateY(-18px)", "translateY(0)"] }
+      : { opacity: [1, 0], transform: ["translateY(0)", "translateY(-14px)"] },
+    { duration: shouldOpen ? 360 : 280, easing, fill: "both" }
+  );
+
+  await Promise.allSettled([shellAnimation.finished, bodyAnimation.finished]);
+  if (!shouldOpen) details.open = false;
+  shellAnimation.cancel();
+  bodyAnimation.cancel();
+  details.classList.remove("is-animating", "is-opening", "is-closing");
+  animatingDetailsFolds.delete(details);
+};
 
 const setActiveDetailsAnchor = (activeLink) => {
   detailsAnchorLinks.forEach((link) => {
@@ -2069,7 +2110,7 @@ detailsAnchorLinks.forEach((link) => {
     if (!target) return;
 
     setActiveDetailsAnchor(link);
-    if (target instanceof HTMLDetailsElement) target.open = true;
+    if (target instanceof HTMLDetailsElement) setDetailsFoldOpen(target, true);
     window.requestAnimationFrame(() => {
       target.scrollIntoView({
         behavior: reducedMotion ? "auto" : "smooth",
@@ -2079,7 +2120,13 @@ detailsAnchorLinks.forEach((link) => {
   });
 });
 
-document.querySelectorAll(".details-fold").forEach((details) => {
+detailsFolds.forEach((details) => {
+  const summary = details.querySelector(":scope > summary");
+  summary?.addEventListener("click", (event) => {
+    event.preventDefault();
+    setDetailsFoldOpen(details, !details.open);
+  });
+
   details.addEventListener("toggle", () => {
     if (!details.open) return;
     const link = detailsAnchorLinks.find((anchor) => anchor.dataset.detailsAnchor === details.id);

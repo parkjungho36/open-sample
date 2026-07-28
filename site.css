@@ -1622,6 +1622,7 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
   display: block;
   scroll-margin-top: calc(var(--nav-height) + 64px);
 }
+.details-fold.is-animating { overflow: clip; }
 .details-fold + .details-fold { border-top: 1px solid var(--ink); }
 .details-hero-summary {
   position: relative;
@@ -1776,19 +1777,13 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
 }
 .details-fold-body {
   background: #fff;
+  transform-origin: top;
 }
 .details-fold[open] > .details-fold-body { border-top: 0; }
-.details-fold[open] > .details-fold-body > .details-content {
-  animation: detailsFoldReveal .35s ease both;
-}
 .details-fold-body .details-content > section:first-child { border-top: 0; }
 #track1-submission-guide {
   scroll-margin-top: calc(var(--nav-height) + 80px);
   outline: 0;
-}
-@keyframes detailsFoldReveal {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 .event-details-hero {
   padding-top: clamp(52px, 6vw, 78px);
@@ -1871,6 +1866,8 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
   align-items: stretch;
 }
 .judging-scorecard {
+  grid-column: 2;
+  grid-row: 1;
   padding: clamp(26px, 3vw, 40px);
   background: var(--soft);
   border-radius: .38rem;
@@ -1949,6 +1946,8 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
 }
 .criteria-grid {
   display: grid;
+  grid-column: 1;
+  grid-row: 1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
@@ -2517,6 +2516,11 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
   .eligibility-card { gap: 42px; }
   .eligibility-size strong { font-size: 78px; }
   .judging-layout { gap: 10px; }
+  .judging-scorecard,
+  .criteria-grid {
+    grid-column: auto;
+    grid-row: auto;
+  }
   .criteria-grid article { min-height: 132px; }
   .details-hero {
     min-height: auto;
