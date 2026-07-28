@@ -1464,6 +1464,10 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   animation: detailsFoldReveal .35s ease both;
 }
 .details-fold-body .details-content > section:first-child { border-top: 0; }
+#track1-submission-guide {
+  scroll-margin-top: calc(var(--nav-height) + 80px);
+  outline: 0;
+}
 @keyframes detailsFoldReveal {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
