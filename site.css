@@ -4318,25 +4318,23 @@ body.terms-modal-open { overflow: hidden; }
 /* Hero title spacing refinements */
 #home .hero-title-main,
 #home .hero-title-location {
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
 }
 
 #home .hero-title-main {
   margin-bottom: 20px;
 }
 
-/* Keep the colorful dot numerals softly illuminated. */
+/* Keep the countdown labels and dots crisp on the light hero. */
 .dot-countdown canvas {
-  filter:
-    drop-shadow(0 0 4px rgba(255, 255, 255, 0.82))
-    drop-shadow(0 0 7px rgba(91, 194, 255, 0.38));
+  filter: none;
 }
 
 @media (max-width: 720px) {
   #home .hero-title-main,
   #home .hero-title-location {
     font-size: clamp(30px, 8.4vw, 42px);
-    letter-spacing: 0.025em;
+    letter-spacing: 0.005em;
   }
 
   #home .hero-title-main {

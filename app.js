@@ -685,16 +685,7 @@ if (countdown) {
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
-    const palette = [
-      "#ffffff",
-      "#edfaff",
-      "#95dcff",
-      "#48c9ef",
-      "#b9adff",
-      "#9be8d8",
-      "#ffd85b",
-      "#1a3b5d"
-    ];
+  const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#c8c0f6", "#ffd400", "#111111", "#173b63"];
   let displayValue = "0:00:00:00";
   let pointer = { x: -1000, y: -1000, active: false };
   let displayWidth = 0;
@@ -706,6 +697,18 @@ if (countdown) {
   let countdownFrame = 0;
   let countdownLastFrame = 0;
   let countdownVisible = true;
+
+  function dotRandom(column, row, salt) {
+    let value = Math.imul(column + 1, 0x9e3779b1)
+      ^ Math.imul(row + 1, 0x85ebca77)
+      ^ Math.imul(salt + 1, 0xc2b2ae3d);
+    value ^= value >>> 16;
+    value = Math.imul(value, 0x7feb352d);
+    value ^= value >>> 15;
+    value = Math.imul(value, 0x846ca68b);
+    value ^= value >>> 16;
+    return (value >>> 0) / 4294967296;
+  }
 
   function updateCountdown() {
     const remaining = Math.max(0, targetTime - Date.now());
@@ -782,18 +785,21 @@ if (countdown) {
         const pixelY = Math.min(maskCanvas.height - 1, Math.floor(y));
         const alpha = pixels[(pixelY * maskCanvas.width + pixelX) * 4 + 3];
         if (alpha > 35) {
-          const colorIndex = Math.abs(Math.floor(x / gap) * 17 + Math.floor(y / gap) * 31) % palette.length;
-          const sizeSeed = Math.abs(Math.floor(x / gap) * 13 + Math.floor(y / gap) * 19) % 7;
-          const radius = gap * (.17 + sizeSeed * .025);
+          const column = Math.floor(x / gap);
+          const row = Math.floor(y / gap);
           const key = `${Math.round(x * 10)}:${Math.round(y * 10)}`;
           const previousDot = previousDots.get(key);
+          const color = previousDot?.color
+            ?? palette[Math.floor(dotRandom(column, row, 11) * palette.length)];
+          const radius = previousDot?.radius
+            ?? gap * (.18 + dotRandom(column, row, 29) * .21);
           nextDots.push({
             baseX: x,
             baseY: y,
             x: previousDot?.x ?? x,
             y: previousDot?.y ?? y,
             radius,
-            color: palette[colorIndex]
+            color
           });
         }
       }
