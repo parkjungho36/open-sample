@@ -794,6 +794,27 @@
               </div>
 
               <div class="consent-list">
+                <label class="country-consent-field" for="representative-country">
+                  <span>
+                    <strong>대표자 거주 국가<sup>*</sup></strong>
+                    <small>국가명을 검색하거나 목록에서 선택해주세요.</small>
+                  </span>
+                  <span class="country-search-control">
+                    <i data-lucide="search" aria-hidden="true"></i>
+                    <input
+                      id="representative-country"
+                      name="representative-country"
+                      type="search"
+                      list="representative-country-options"
+                      autocomplete="country-name"
+                      placeholder="국가 검색"
+                      data-country-input
+                      required
+                    >
+                    <datalist id="representative-country-options" data-country-options></datalist>
+                  </span>
+                </label>
+
                 <button class="consent-row" type="button" data-consent-trigger="event" aria-pressed="false">
                   <span>
                     <strong>참가 약관<sup>*</sup></strong>
@@ -806,6 +827,14 @@
                   <span>
                     <strong>개인정보 수집·이용 동의서<sup>*</sup></strong>
                     <small>수집 항목과 이용 목적을 확인해주세요.</small>
+                  </span>
+                  <span class="consent-indicator" aria-hidden="true"><i data-lucide="check"></i></span>
+                </button>
+
+                <button class="consent-row international-consent" type="button" data-consent-trigger="international" aria-pressed="false" hidden>
+                  <span>
+                    <strong>개인정보 국외 이전 동의서<sup>*</sup></strong>
+                    <small>Consent to the International Transfer of Personal Information</small>
                   </span>
                   <span class="consent-indicator" aria-hidden="true"><i data-lucide="check"></i></span>
                 </button>
@@ -862,7 +891,7 @@
                   <label class="field-wide">
                     <span>팀명 <em>선택</em></span>
                     <input name="team-name">
-                    <small>2인 이상의 팀인 경우에만 작성해주세요.</small>
+                    <small>외부에 노출되는 닉네임입니다.</small>
                   </label>
                 </div>
 
@@ -940,6 +969,24 @@
         <p>개인정보 수집 및 이용에 동의하지 않을 권리가 있습니다. 다만 필수 정보 수집에 동의하지 않을 경우 참가 신청과 행사 참여가 제한될 수 있습니다.</p>
         <h3>7. 개인정보 보호 문의</h3>
         <p>개인정보 열람, 정정, 삭제 또는 처리 정지 요청을 위한 연락처는 최종 개인정보 처리방침과 접수 공지에서 안내됩니다.</p>
+      </template>
+
+      <template id="international-transfer-terms-content">
+        <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 개인정보 국외 이전 문안은 운영팀 및 법무 검토 후 교체됩니다.</p>
+        <h3>1. 국외 이전되는 개인정보</h3>
+        <p>Google 계정에 연결된 이름, 이메일 주소 및 프로필 사진과 신청서에 입력한 성명, 휴대전화번호, 이메일 주소, 생년월일, 거주 국가 및 팀 구성 정보를 이전할 수 있습니다.</p>
+        <h3>2. 이전받는 자 및 이전 국가</h3>
+        <p>행사 신청 접수, 참가자 관리와 운영 지원을 위해 대한민국에 위치한 공동 주최사 및 행사 운영 수탁사에 개인정보가 이전될 수 있습니다. 구체적인 이전받는 자는 최종 개인정보 처리 문안에서 안내합니다.</p>
+        <h3>3. 이전 목적</h3>
+        <p>참가 자격 확인, 신청 접수, 심사 진행, 본선 진출 안내, 행사 운영, 참가자 문의 대응과 리워드 지급을 목적으로 이용합니다.</p>
+        <h3>4. 이전 방법 및 시점</h3>
+        <p>참가자가 신청서를 제출하는 시점에 암호화된 네트워크를 통해 전송되며, 행사 운영에 필요한 범위에서만 처리됩니다.</p>
+        <h3>5. 보유 및 이용 기간</h3>
+        <p>이전된 개인정보는 행사 종료와 관련 업무 완료 후 관련 법령 및 최종 개인정보 처리방침에서 정한 기간 동안 보관한 뒤 안전하게 파기합니다.</p>
+        <h3>6. 동의 거부 권리</h3>
+        <p>개인정보 국외 이전에 동의하지 않을 권리가 있습니다. 다만 해외 거주 참가자가 필수 개인정보의 국외 이전에 동의하지 않는 경우 참가 신청과 행사 운영 안내가 제한될 수 있습니다.</p>
+        <h3>7. 문의</h3>
+        <p>개인정보 국외 이전과 관련한 문의 및 권리 행사를 위한 연락처는 최종 개인정보 처리방침과 접수 공지에서 안내합니다.</p>
       </template>
     </section>
 

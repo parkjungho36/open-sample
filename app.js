@@ -798,8 +798,11 @@ if (submitPage) {
   const termsProgress = submitPage.querySelector("[data-terms-progress]");
   const termsAccept = submitPage.querySelector("[data-terms-accept]");
   const termsClose = submitPage.querySelector("[data-terms-close]");
+  const countryInput = submitPage.querySelector("[data-country-input]");
+  const countryOptions = submitPage.querySelector("[data-country-options]");
+  const internationalConsent = submitPage.querySelector('[data-consent-trigger="international"]');
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
-  const consentState = { event: false, privacy: false };
+  const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
     event: {
       title: "OpenAI Game Hackathon in Seoul 참가 약관",
@@ -808,10 +811,30 @@ if (submitPage) {
     privacy: {
       title: "개인정보 수집·이용 동의서",
       template: document.querySelector("#privacy-terms-content")
+    },
+    international: {
+      title: "개인정보 국외 이전 동의서",
+      template: document.querySelector("#international-transfer-terms-content")
     }
   };
+  const countryCodes = `
+    AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ
+    BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ
+    CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ
+    DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR
+    GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY
+    HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP
+    KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY
+    MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ
+    NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY
+    QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ
+    TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ
+    VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW
+  `.trim().split(/\s+/);
+  const countryLookup = new Map();
   let activeConsent = null;
   let googleInitialized = false;
+  let selectedCountryCode = "";
 
   function readStoredAccount() {
     try {
@@ -901,6 +924,71 @@ if (submitPage) {
     });
   }
 
+  function normalizeCountryName(value) {
+    return value.trim().toLocaleLowerCase("ko-KR");
+  }
+
+  function buildCountryOptions() {
+    if (!countryOptions || !window.Intl?.DisplayNames) return;
+
+    const koreanNames = new Intl.DisplayNames(["ko"], { type: "region" });
+    const englishNames = new Intl.DisplayNames(["en"], { type: "region" });
+    const countries = countryCodes
+      .map((code) => ({
+        code,
+        korean: koreanNames.of(code),
+        english: englishNames.of(code)
+      }))
+      .filter(({ korean, english }) => korean && english)
+      .sort((a, b) => {
+        if (a.code === "KR") return -1;
+        if (b.code === "KR") return 1;
+        return a.korean.localeCompare(b.korean, "ko");
+      });
+
+    const fragment = document.createDocumentFragment();
+    countries.forEach(({ code, korean, english }) => {
+      const value = `${korean} (${english})`;
+      const option = document.createElement("option");
+      option.value = value;
+      option.label = code;
+      fragment.append(option);
+
+      [value, korean, english, code].forEach((alias) => {
+        countryLookup.set(normalizeCountryName(alias), code);
+      });
+    });
+    countryOptions.replaceChildren(fragment);
+  }
+
+  function resolveCountryCode() {
+    return countryLookup.get(normalizeCountryName(countryInput.value)) || "";
+  }
+
+  function syncCountryConsent(requireValidSelection = false) {
+    const countryCode = resolveCountryCode();
+    const countryChanged = countryCode !== selectedCountryCode;
+
+    if (countryChanged) updateConsentRow("international", false);
+    selectedCountryCode = countryCode;
+
+    const requiresInternationalConsent = Boolean(countryCode && countryCode !== "KR");
+    internationalConsent.hidden = !requiresInternationalConsent;
+    if (!requiresInternationalConsent) updateConsentRow("international", false);
+
+    if (requireValidSelection && !countryCode) {
+      countryInput.setCustomValidity(
+        countryInput.value.trim()
+          ? "검색 결과 목록에서 국가를 선택해주세요."
+          : "대표자의 거주 국가를 선택해주세요."
+      );
+    } else {
+      countryInput.setCustomValidity("");
+    }
+
+    return countryCode;
+  }
+
   function updateConsentRow(key, agreed) {
     consentState[key] = agreed;
     const trigger = submitPage.querySelector(`[data-consent-trigger="${key}"]`);
@@ -935,6 +1023,11 @@ if (submitPage) {
   function closeTerms() {
     if (termsDialog.open) termsDialog.close();
   }
+
+  buildCountryOptions();
+  countryInput.addEventListener("input", () => syncCountryConsent(false));
+  countryInput.addEventListener("change", () => syncCountryConsent(true));
+  countryInput.addEventListener("blur", () => syncCountryConsent(true));
 
   submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
@@ -980,6 +1073,10 @@ if (submitPage) {
     applicationForm.reset();
     updateConsentRow("event", false);
     updateConsentRow("privacy", false);
+    updateConsentRow("international", false);
+    selectedCountryCode = "";
+    internationalConsent.hidden = true;
+    countryInput.setCustomValidity("");
     window.google?.accounts?.id?.disableAutoSelect();
     setAccount(null);
   });
@@ -987,9 +1084,19 @@ if (submitPage) {
   applicationForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const status = applicationForm.querySelector(".form-status");
+    const countryCode = syncCountryConsent(true);
+    const needsInternationalConsent = Boolean(countryCode && countryCode !== "KR");
 
-    if (!consentState.event || !consentState.privacy) {
-      status.textContent = "참가 약관과 개인정보 수집·이용 동의서를 확인해주세요.";
+    if (
+      !countryCode ||
+      !consentState.event ||
+      !consentState.privacy ||
+      (needsInternationalConsent && !consentState.international)
+    ) {
+      status.textContent = needsInternationalConsent && !consentState.international
+        ? "개인정보 국외 이전 동의서를 포함한 필수 확인 항목을 완료해주세요."
+        : "거주 국가와 필수 동의 항목을 확인해주세요.";
+      applicationForm.reportValidity();
       submitPage.querySelector(".consent-section")?.scrollIntoView({
         behavior: reducedMotion ? "auto" : "smooth",
         block: "start"
