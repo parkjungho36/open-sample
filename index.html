@@ -776,26 +776,27 @@
               </div>
 
               <div class="consent-list">
-                <label class="country-consent-field" for="representative-country">
+                <div class="country-consent-field">
                   <span>
-                    <strong>대표자 거주 국가<sup>*</sup></strong>
+                    <strong id="representative-country-label">대표자 거주 국가<sup>*</sup></strong>
                     <small>국가명을 검색하거나 목록에서 선택해주세요.</small>
                   </span>
                   <span class="country-search-control">
-                    <i data-lucide="search" aria-hidden="true"></i>
-                    <input
+                    <input name="representative-country" type="hidden" data-country-input>
+                    <button
                       id="representative-country"
-                      name="representative-country"
-                      type="search"
-                      list="representative-country-options"
-                      autocomplete="country-name"
-                      placeholder="국가 검색"
-                      data-country-input
-                      required
+                      type="button"
+                      data-country-trigger
+                      aria-labelledby="representative-country-label representative-country-value"
+                      aria-haspopup="dialog"
                     >
-                    <datalist id="representative-country-options" data-country-options></datalist>
+                      <i data-lucide="search" aria-hidden="true"></i>
+                      <span id="representative-country-value" data-country-selection>국가 선택</span>
+                      <i data-lucide="chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <small class="country-field-error" data-country-error hidden>대표자의 거주 국가를 선택해주세요.</small>
                   </span>
-                </label>
+                </div>
 
                 <button class="consent-row" type="button" data-consent-trigger="event" aria-pressed="false">
                   <span>
@@ -895,6 +896,31 @@
           </form>
         </div>
       </section>
+
+      <dialog class="country-dialog" data-country-dialog aria-labelledby="country-dialog-title">
+        <div class="country-dialog-frame">
+          <header>
+            <div>
+              <p class="kicker">SELECT COUNTRY</p>
+              <h2 id="country-dialog-title">대표자 거주 국가</h2>
+            </div>
+            <button class="country-dialog-close" type="button" data-country-close aria-label="국가 선택 닫기">
+              <i data-lucide="x" aria-hidden="true"></i>
+            </button>
+          </header>
+          <label class="country-dialog-search">
+            <span class="sr-only">국가 검색</span>
+            <i data-lucide="search" aria-hidden="true"></i>
+            <input type="search" placeholder="국가명 또는 국가 코드 검색" autocomplete="off" data-country-search>
+          </label>
+          <div class="country-option-list" role="radiogroup" aria-label="국가 선택 목록" data-country-options></div>
+          <p class="country-empty" data-country-empty hidden>검색 결과가 없습니다.</p>
+          <footer>
+            <button class="country-dialog-cancel" type="button" data-country-cancel>닫기</button>
+            <button class="country-dialog-confirm" type="button" data-country-confirm disabled>선택</button>
+          </footer>
+        </div>
+      </dialog>
 
       <dialog class="terms-dialog" data-terms-dialog aria-labelledby="terms-dialog-title">
         <div class="terms-dialog-frame">

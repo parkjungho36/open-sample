@@ -799,7 +799,16 @@ if (submitPage) {
   const termsAccept = submitPage.querySelector("[data-terms-accept]");
   const termsClose = submitPage.querySelector("[data-terms-close]");
   const countryInput = submitPage.querySelector("[data-country-input]");
+  const countryTrigger = submitPage.querySelector("[data-country-trigger]");
+  const countrySelection = submitPage.querySelector("[data-country-selection]");
+  const countryError = submitPage.querySelector("[data-country-error]");
+  const countryDialog = submitPage.querySelector("[data-country-dialog]");
+  const countrySearch = submitPage.querySelector("[data-country-search]");
   const countryOptions = submitPage.querySelector("[data-country-options]");
+  const countryEmpty = submitPage.querySelector("[data-country-empty]");
+  const countryClose = submitPage.querySelector("[data-country-close]");
+  const countryCancel = submitPage.querySelector("[data-country-cancel]");
+  const countryConfirm = submitPage.querySelector("[data-country-confirm]");
   const internationalConsent = submitPage.querySelector('[data-consent-trigger="international"]');
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
@@ -831,10 +840,11 @@ if (submitPage) {
     TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ
     VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW
   `.trim().split(/\s+/);
-  const countryLookup = new Map();
+  const countryEntries = new Map();
   let activeConsent = null;
   let googleInitialized = false;
   let selectedCountryCode = "";
+  let pendingCountryCode = "";
 
   function readStoredAccount() {
     try {
@@ -929,10 +939,14 @@ if (submitPage) {
   }
 
   function buildCountryOptions() {
-    if (!countryOptions || !window.Intl?.DisplayNames) return;
+    if (!countryOptions) return;
 
-    const koreanNames = new Intl.DisplayNames(["ko"], { type: "region" });
-    const englishNames = new Intl.DisplayNames(["en"], { type: "region" });
+    const koreanNames = window.Intl?.DisplayNames
+      ? new Intl.DisplayNames(["ko"], { type: "region" })
+      : { of: (code) => code };
+    const englishNames = window.Intl?.DisplayNames
+      ? new Intl.DisplayNames(["en"], { type: "region" })
+      : { of: (code) => code };
     const countries = countryCodes
       .map((code) => ({
         code,
@@ -948,25 +962,63 @@ if (submitPage) {
 
     const fragment = document.createDocumentFragment();
     countries.forEach(({ code, korean, english }) => {
-      const value = `${korean} (${english})`;
-      const option = document.createElement("option");
-      option.value = value;
-      option.label = code;
-      fragment.append(option);
+      const label = `${korean} (${english})`;
+      const option = document.createElement("button");
+      const copy = document.createElement("span");
+      const koreanName = document.createElement("strong");
+      const englishName = document.createElement("small");
+      const countryCode = document.createElement("span");
 
-      [value, korean, english, code].forEach((alias) => {
-        countryLookup.set(normalizeCountryName(alias), code);
-      });
+      option.type = "button";
+      option.className = "country-option";
+      option.dataset.countryCode = code;
+      option.dataset.countrySearch = normalizeCountryName(`${label} ${code}`);
+      option.setAttribute("role", "radio");
+      option.setAttribute("aria-checked", "false");
+
+      copy.className = "country-option-copy";
+      koreanName.textContent = korean;
+      englishName.textContent = english;
+      countryCode.className = "country-option-code";
+      countryCode.textContent = code;
+
+      copy.append(koreanName, englishName);
+      option.append(copy, countryCode);
+      option.addEventListener("click", () => updatePendingCountry(code));
+      fragment.append(option);
+      countryEntries.set(code, { code, korean, english, label });
     });
     countryOptions.replaceChildren(fragment);
   }
 
-  function resolveCountryCode() {
-    return countryLookup.get(normalizeCountryName(countryInput.value)) || "";
+  function updatePendingCountry(countryCode) {
+    pendingCountryCode = countryCode;
+    countryOptions.querySelectorAll(".country-option").forEach((option) => {
+      option.setAttribute("aria-checked", String(option.dataset.countryCode === countryCode));
+    });
+    countryConfirm.disabled = !pendingCountryCode;
+  }
+
+  function filterCountryOptions(query) {
+    const normalizedQuery = normalizeCountryName(query);
+    let visibleCount = 0;
+
+    countryOptions.querySelectorAll(".country-option").forEach((option) => {
+      const isVisible = !normalizedQuery || option.dataset.countrySearch.includes(normalizedQuery);
+      option.hidden = !isVisible;
+      if (isVisible) visibleCount += 1;
+    });
+    countryEmpty.hidden = visibleCount > 0;
+  }
+
+  function renderCountrySelection(countryCode) {
+    const country = countryEntries.get(countryCode);
+    countrySelection.textContent = country?.label || "국가 선택";
+    countryTrigger.classList.toggle("is-selected", Boolean(country));
   }
 
   function syncCountryConsent(requireValidSelection = false) {
-    const countryCode = resolveCountryCode();
+    const countryCode = countryInput.value;
     const countryChanged = countryCode !== selectedCountryCode;
 
     if (countryChanged) updateConsentRow("international", false);
@@ -976,17 +1028,42 @@ if (submitPage) {
     internationalConsent.hidden = !requiresInternationalConsent;
     if (!requiresInternationalConsent) updateConsentRow("international", false);
 
-    if (requireValidSelection && !countryCode) {
-      countryInput.setCustomValidity(
-        countryInput.value.trim()
-          ? "검색 결과 목록에서 국가를 선택해주세요."
-          : "대표자의 거주 국가를 선택해주세요."
-      );
-    } else {
-      countryInput.setCustomValidity("");
-    }
+    const showError = requireValidSelection && !countryCode;
+    countryTrigger.setAttribute("aria-invalid", String(showError));
+    countryError.hidden = !showError;
 
     return countryCode;
+  }
+
+  function openCountryDialog() {
+    pendingCountryCode = selectedCountryCode;
+    countrySearch.value = "";
+    filterCountryOptions("");
+    updatePendingCountry(pendingCountryCode);
+    countryDialog.showModal();
+    document.body.classList.add("terms-modal-open");
+    window.requestAnimationFrame(() => {
+      countrySearch.focus();
+      if (pendingCountryCode) {
+        countryOptions
+          .querySelector(`[data-country-code="${pendingCountryCode}"]`)
+          ?.scrollIntoView({ block: "center" });
+      } else {
+        countryOptions.scrollTop = 0;
+      }
+    });
+  }
+
+  function closeCountryDialog() {
+    if (countryDialog.open) countryDialog.close();
+  }
+
+  function confirmCountrySelection() {
+    if (!pendingCountryCode) return;
+    countryInput.value = pendingCountryCode;
+    renderCountrySelection(pendingCountryCode);
+    syncCountryConsent(false);
+    closeCountryDialog();
   }
 
   function updateConsentRow(key, agreed) {
@@ -1025,9 +1102,18 @@ if (submitPage) {
   }
 
   buildCountryOptions();
-  countryInput.addEventListener("input", () => syncCountryConsent(false));
-  countryInput.addEventListener("change", () => syncCountryConsent(true));
-  countryInput.addEventListener("blur", () => syncCountryConsent(true));
+  renderCountrySelection("");
+  countryTrigger.addEventListener("click", openCountryDialog);
+  countrySearch.addEventListener("input", () => filterCountryOptions(countrySearch.value));
+  countryClose.addEventListener("click", closeCountryDialog);
+  countryCancel.addEventListener("click", closeCountryDialog);
+  countryConfirm.addEventListener("click", confirmCountrySelection);
+  countryDialog.addEventListener("close", () => {
+    document.body.classList.remove("terms-modal-open");
+  });
+  countryDialog.addEventListener("click", (event) => {
+    if (event.target === countryDialog) closeCountryDialog();
+  });
 
   submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
@@ -1075,8 +1161,11 @@ if (submitPage) {
     updateConsentRow("privacy", false);
     updateConsentRow("international", false);
     selectedCountryCode = "";
+    pendingCountryCode = "";
     internationalConsent.hidden = true;
-    countryInput.setCustomValidity("");
+    renderCountrySelection("");
+    countryTrigger.setAttribute("aria-invalid", "false");
+    countryError.hidden = true;
     window.google?.accounts?.id?.disableAutoSelect();
     setAccount(null);
   });
@@ -1096,6 +1185,7 @@ if (submitPage) {
       status.textContent = needsInternationalConsent && !consentState.international
         ? "개인정보 국외 이전 동의서를 포함한 필수 확인 항목을 완료해주세요."
         : "거주 국가와 필수 동의 항목을 확인해주세요.";
+      if (!countryCode) countryTrigger.focus({ preventScroll: true });
       applicationForm.reportValidity();
       submitPage.querySelector(".consent-section")?.scrollIntoView({
         behavior: reducedMotion ? "auto" : "smooth",
