@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="OpenAI와 Com2uS가 함께하는 OpenAI Game Hackathon in Seoul 행사 안내, 참가 신청 및 작품 제출 페이지입니다.">
   <meta name="theme-color" content="#ffffff">
+  <meta name="google-oauth-client-id" content="">
   <title>OpenAI Game Hackathon in Seoul</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -724,20 +725,204 @@
       </details>
     </section>
 
-    <section class="page simple shell" id="submit" data-page aria-labelledby="submit-title">
-      <p class="kicker">SUBMISSION</p>
-      <h1 id="submit-title">작품 제출</h1>
-      <p class="page-lead">완성한 게임과 팀의 이야기를 공유해주세요.</p>
-      <form data-demo-form>
-        <label for="team-name">팀 이름</label>
-        <input id="team-name" name="team" placeholder="Team name" required>
-        <label for="game-url">게임 링크</label>
-        <input id="game-url" name="url" type="url" inputmode="url" placeholder="https://" required>
-        <label for="game-description">게임 소개</label>
-        <textarea id="game-description" name="description" placeholder="플레이어에게 들려줄 이야기" required></textarea>
-        <button type="submit">작품 제출하기</button>
-        <p class="form-status" aria-live="polite"></p>
-      </form>
+    <section class="page submit-page" id="submit" data-page aria-labelledby="submit-title">
+      <section class="submit-login" data-submit-login>
+        <div class="submit-login-inner">
+          <img class="submit-wordmark" src="assets/openai-wordmark.svg" alt="OpenAI">
+          <h1 id="submit-title">GAME HACKATHON<br>IN SEOUL</h1>
+          <p>참여를 위해 로그인을 해주세요.</p>
+          <div class="google-signin-slot" data-google-signin-slot></div>
+          <button class="google-signin-fallback" type="button" data-google-signin-fallback>
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+            <span>Google로 로그인</span>
+          </button>
+          <p class="submit-auth-status" data-auth-status aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="submit-application" data-submit-application hidden>
+        <header class="application-header shell">
+          <img class="application-wordmark" src="assets/openai-wordmark.svg" alt="OpenAI">
+          <p class="kicker">FIRST CHALLENGE · ONLINE WARM-UP</p>
+          <h1>GAME HACKATHON<br>IN SEOUL <span>신청서</span></h1>
+          <div class="application-intro">
+            <strong>First Challenge<br>Online warm-up 참가 신청을 위한 신청서입니다.</strong>
+            <p>아래 항목을 읽고 작성해주세요.</p>
+            <p class="application-caution"><i data-lucide="triangle-alert" aria-hidden="true"></i> 팀 단위로 신청하실 경우, 대표자 1인이 작성 부탁드립니다.</p>
+          </div>
+        </header>
+
+        <div class="application-body shell">
+          <section class="account-strip" aria-labelledby="account-title">
+            <div class="account-identity">
+              <span class="account-avatar" data-account-avatar aria-hidden="true"></span>
+              <div>
+                <p id="account-title">지금 나의 계정</p>
+                <strong data-account-email></strong>
+              </div>
+            </div>
+            <button type="button" data-switch-account>Switch Account</button>
+          </section>
+          <p class="account-recording-note">파일을 업로드하거나 이 신청서를 제출하면 Google 계정에 연결된 이름, 이메일 주소 및 프로필 사진이 기록됩니다.</p>
+
+          <form class="application-form" data-application-form novalidate>
+            <section class="application-section consent-section" aria-labelledby="consent-title">
+              <div class="application-section-title">
+                <span>01</span>
+                <div>
+                  <p class="kicker">BEFORE YOU APPLY</p>
+                  <h2 id="consent-title">신청 전 확인</h2>
+                </div>
+              </div>
+
+              <div class="consent-list">
+                <button class="consent-row" type="button" data-consent-trigger="event" aria-pressed="false">
+                  <span>
+                    <strong>참가 약관<sup>*</sup></strong>
+                    <small>약관 전문을 확인하고 동의해주세요.</small>
+                  </span>
+                  <span class="consent-indicator" aria-hidden="true"><i data-lucide="check"></i></span>
+                </button>
+
+                <button class="consent-row" type="button" data-consent-trigger="privacy" aria-pressed="false">
+                  <span>
+                    <strong>개인정보 수집·이용 동의서<sup>*</sup></strong>
+                    <small>수집 항목과 이용 목적을 확인해주세요.</small>
+                  </span>
+                  <span class="consent-indicator" aria-hidden="true"><i data-lucide="check"></i></span>
+                </button>
+
+                <label class="consent-row age-consent">
+                  <span>
+                    <strong>참가자 연령 확인<sup>*</sup></strong>
+                    <small>참가 자격 확인을 위한 필수 항목입니다.</small>
+                  </span>
+                  <span class="age-choice">
+                    <input type="checkbox" name="age-confirmation" required>
+                    <span>참가자는 만 19세 이상입니다.</span>
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section class="application-section applicant-section" aria-labelledby="applicant-title">
+              <div class="application-section-title">
+                <span>02</span>
+                <div>
+                  <p class="kicker">APPLICATION FORM</p>
+                  <h2 id="applicant-title">GAME HACKATHON IN SEOUL 참가 신청</h2>
+                  <p>대표 신청자의 인적 사항을 기재해주세요.</p>
+                </div>
+              </div>
+
+              <p class="required-note"><sup>*</sup> 필수 질문</p>
+              <fieldset class="applicant-fields">
+                <legend>신청자 인적 사항</legend>
+                <div class="application-form-grid">
+                  <label>
+                    <span>성명<sup>*</sup></span>
+                    <input name="applicant-name" autocomplete="name" required>
+                  </label>
+                  <label>
+                    <span>휴대전화번호<sup>*</sup></span>
+                    <input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="010-1234-5678" pattern="010-[0-9]{4}-[0-9]{4}" required>
+                    <small>형식: 010-1234-5678</small>
+                  </label>
+                  <label>
+                    <span>이메일 주소<sup>*</sup></span>
+                    <input name="email" type="email" autocomplete="email" data-applicant-email required>
+                  </label>
+                  <label>
+                    <span>생년월일<sup>*</sup></span>
+                    <input name="birth-date" inputmode="numeric" autocomplete="bday" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" required>
+                    <small>형식: YYYY-MM-DD</small>
+                  </label>
+                  <label class="field-wide">
+                    <span>소속 <em>선택</em></span>
+                    <input name="affiliation" autocomplete="organization" placeholder="회사, 학교 등">
+                  </label>
+                  <label class="field-wide">
+                    <span>팀명 <em>선택</em></span>
+                    <input name="team-name">
+                    <small>2인 이상의 팀인 경우에만 작성해주세요.</small>
+                  </label>
+                </div>
+
+                <fieldset class="team-size">
+                  <legend>팀 구성 인원<sup>*</sup></legend>
+                  <div class="team-size-options">
+                    <label><input type="radio" name="team-size" value="1" required><span>1인</span></label>
+                    <label><input type="radio" name="team-size" value="2"><span>2인</span></label>
+                    <label><input type="radio" name="team-size" value="3"><span>3인</span></label>
+                  </div>
+                </fieldset>
+              </fieldset>
+
+              <div class="application-submit">
+                <button type="submit">신청서 제출하기</button>
+                <p class="form-status" aria-live="polite"></p>
+              </div>
+            </section>
+          </form>
+        </div>
+      </section>
+
+      <dialog class="terms-dialog" data-terms-dialog aria-labelledby="terms-dialog-title">
+        <div class="terms-dialog-frame">
+          <header>
+            <div>
+              <p class="kicker">REQUIRED AGREEMENT</p>
+              <h2 id="terms-dialog-title" data-terms-title></h2>
+            </div>
+            <button class="terms-close" type="button" data-terms-close aria-label="약관 닫기">
+              <i data-lucide="x" aria-hidden="true"></i>
+            </button>
+          </header>
+          <div class="terms-scroll" data-terms-scroll tabindex="0"></div>
+          <footer>
+            <p data-terms-progress>내용을 끝까지 읽으면 동의할 수 있습니다.</p>
+            <button type="button" data-terms-accept disabled>동의합니다</button>
+          </footer>
+        </div>
+      </dialog>
+
+      <template id="event-terms-content">
+        <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 약관은 운영팀 및 법무 검토 후 교체됩니다.</p>
+        <h3>1. 목적</h3>
+        <p>본 약관은 OpenAI Game Hackathon in Seoul 참가 신청, 예선 심사, 본선 행사 참여와 관련하여 주최 측과 참가자 사이의 기본 사항을 정하기 위한 것입니다.</p>
+        <h3>2. 참가 자격</h3>
+        <p>참가자는 신청일 기준 만 19세 이상이어야 하며, 개인 또는 팀으로 참가할 수 있습니다. 팀으로 참가하는 경우 대표자 1인이 팀을 대표하여 신청서를 작성합니다.</p>
+        <h3>3. 참가 신청</h3>
+        <p>참가자는 신청서의 모든 필수 항목을 사실에 근거하여 작성해야 합니다. 허위 정보, 타인의 정보 도용 또는 중복 신청이 확인되면 선정 이후에도 참가가 취소될 수 있습니다.</p>
+        <h3>4. 제출 작품</h3>
+        <p>작품은 심사 기간 동안 운영진과 심사위원이 별도 승인 없이 실행하고 플레이할 수 있어야 합니다. 기존 프로젝트를 활용하는 경우 챌린지 기간 동안 새롭게 개발된 범위를 명확히 밝혀야 합니다.</p>
+        <h3>5. 권리와 책임</h3>
+        <p>참가자는 제출 작품에 필요한 권리를 적법하게 보유해야 합니다. 제3자의 저작권, 상표권, 초상권 또는 기타 권리를 침해하여 발생하는 문제에 대한 책임은 참가자에게 있습니다.</p>
+        <h3>6. 행사 기록 및 공개</h3>
+        <p>본선 행사 과정에서 촬영된 사진과 영상, 참가 팀명 및 작품 정보는 행사 운영과 홍보를 위해 사용될 수 있습니다. 구체적인 활용 범위는 최종 약관에서 안내합니다.</p>
+        <h3>7. 일정 및 운영 변경</h3>
+        <p>천재지변, 안전 문제 또는 운영상 불가피한 사유가 발생하는 경우 주최 측은 일정, 장소, 진행 방식 또는 프로그램 일부를 변경할 수 있습니다.</p>
+        <h3>8. 문의</h3>
+        <p>약관과 행사 운영에 관한 문의 방법은 최종 접수 공지와 함께 안내됩니다.</p>
+      </template>
+
+      <template id="privacy-terms-content">
+        <p class="terms-draft-note">아래 내용은 화면 동작 확인을 위한 운영 초안입니다. 최종 개인정보 처리 문안은 운영팀 및 법무 검토 후 교체됩니다.</p>
+        <h3>1. 수집하는 개인정보</h3>
+        <p>필수 항목으로 Google 계정의 이름, 이메일 주소 및 프로필 사진, 신청자의 성명, 휴대전화번호, 이메일 주소, 생년월일과 팀 구성 정보를 수집합니다. 소속과 팀명은 선택 항목입니다.</p>
+        <h3>2. 수집 및 이용 목적</h3>
+        <p>수집된 정보는 참가 자격 확인, 신청 접수, 심사 진행, 본선 진출 안내, 행사 운영, 참가자 문의 대응과 리워드 지급을 위해 이용됩니다.</p>
+        <h3>3. 보유 및 이용 기간</h3>
+        <p>개인정보는 행사 종료 및 관련 업무 완료 후 관계 법령과 최종 개인정보 처리방침에서 정한 기간 동안 보관한 뒤 안전하게 파기합니다.</p>
+        <h3>4. 제3자 제공</h3>
+        <p>행사 운영에 필요한 경우에 한해 공동 주최사, 운영 대행사 또는 리워드 제공사에 최소한의 정보가 제공될 수 있으며, 구체적인 제공 대상과 항목은 최종 동의서에서 안내합니다.</p>
+        <h3>5. 처리 위탁</h3>
+        <p>접수 시스템 운영, 참가자 안내, 행사 현장 운영 등의 업무를 전문 업체에 위탁할 수 있습니다. 위탁사와 업무 내용은 확정 후 공개됩니다.</p>
+        <h3>6. 동의 거부 권리</h3>
+        <p>개인정보 수집 및 이용에 동의하지 않을 권리가 있습니다. 다만 필수 정보 수집에 동의하지 않을 경우 참가 신청과 행사 참여가 제한될 수 있습니다.</p>
+        <h3>7. 개인정보 보호 문의</h3>
+        <p>개인정보 열람, 정정, 삭제 또는 처리 정지 요청을 위한 연락처는 최종 개인정보 처리방침과 접수 공지에서 안내됩니다.</p>
+      </template>
     </section>
 
     <section class="page gallery-page" id="gallery" data-page aria-labelledby="gallery-title">
@@ -773,6 +958,7 @@
     <span>© 2026 OpenAI Game Hackathon in Seoul</span>
   </footer>
 
+  <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <script src="app.js?v=gallery-assets-v1"></script>
 </body>
