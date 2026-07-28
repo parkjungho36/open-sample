@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=closing-card-icons-v1">
+  <link rel="stylesheet" href="site.css?v=countdown-glass-v8">
 </head>
 <body>
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -46,6 +46,12 @@
         <p class="hero-date">26.07.31 - 08.31</p>
         <div class="chat-area">
           <div class="dot-countdown" data-countdown data-target="2026-08-17T23:59:59+09:00" role="timer" aria-label="온라인 챌린지 접수 마감까지 남은 시간">
+            <div class="countdown-glass-layer" aria-hidden="true">
+              <span class="countdown-glass-card" data-countdown-glass-card></span>
+              <span class="countdown-glass-card" data-countdown-glass-card></span>
+              <span class="countdown-glass-card" data-countdown-glass-card></span>
+              <span class="countdown-glass-card" data-countdown-glass-card></span>
+            </div>
             <canvas data-dot-countdown aria-hidden="true"></canvas>
           </div>
           <p class="chat-prompt">Build with Codex, Play with HIVE<br>Codex로 만들고, HIVE와 함께 플레이의 무대로</p>
@@ -1289,6 +1295,6 @@
 
   <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=countdown-random-dots-v3"></script>
+  <script src="app.js?v=countdown-glass-v8"></script>
 </body>
 </html>

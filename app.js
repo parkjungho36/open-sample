@@ -684,6 +684,7 @@ if (countdown) {
   const context = canvas.getContext("2d");
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
+  const glassCards = [...countdown.querySelectorAll("[data-countdown-glass-card]")];
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
   const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#c8c0f6", "#ffd400", "#111111", "#173b63"];
   let displayValue = "0:00:00:00";
@@ -693,6 +694,7 @@ if (countdown) {
   let dots = [];
   let labelCenters = [];
   let labelY = 0;
+  let labelFontSize = 12;
   let maskDirty = true;
   let countdownFrame = 0;
   let countdownLastFrame = 0;
@@ -708,6 +710,21 @@ if (countdown) {
     value = Math.imul(value, 0x846ca68b);
     value ^= value >>> 16;
     return (value >>> 0) / 4294967296;
+  }
+
+  function drawTrackedLabel(text, centerX, y, tracking) {
+    const characters = [...text];
+    const widths = characters.map((character) => context.measureText(character).width);
+    const totalWidth = widths.reduce((sum, width) => sum + width, 0)
+      + tracking * Math.max(0, characters.length - 1);
+    let cursor = centerX - totalWidth / 2;
+
+    context.textAlign = "left";
+    characters.forEach((character, index) => {
+      context.fillText(character, cursor, y);
+      cursor += widths[index] + tracking;
+    });
+    context.textAlign = "center";
   }
 
   function updateCountdown() {
@@ -752,9 +769,14 @@ if (countdown) {
   }
 
   function rebuildDotMask() {
-    const labelSpace = Math.max(28, displayHeight * .15);
-    const numberHeight = displayHeight - labelSpace;
-    let fontSize = Math.max(44, numberHeight * .82);
+    labelFontSize = Math.max(12, Math.min(17, displayWidth / 65));
+    labelY = displayHeight - 2;
+    const glassBottom = Math.max(3, labelY - labelFontSize - 15);
+    const glassHeight = Math.min(200, Math.max(1, glassBottom - 2));
+    const glassTop = Math.max(2, glassBottom - glassHeight);
+    const numberCenterY = glassTop + glassHeight / 2;
+    const numberHeight = glassBottom;
+    let fontSize = Math.max(44, glassHeight * .78);
 
     maskCanvas.width = Math.max(1, Math.ceil(displayWidth));
     maskCanvas.height = Math.max(1, Math.ceil(displayHeight));
@@ -768,12 +790,11 @@ if (countdown) {
       maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
     }
 
-    const numberCenterY = numberHeight * .49;
     maskContext.fillStyle = "#000";
     maskContext.fillText(displayValue, displayWidth / 2, numberCenterY);
 
     const pixels = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
-    const gap = Math.max(3.8, Math.min(5.4, displayWidth / 188));
+    const gap = Math.max(5.5, Math.min(8.2, displayWidth / 135));
     const previousDots = new Map(
       dots.map((dot) => [`${Math.round(dot.baseX * 10)}:${Math.round(dot.baseY * 10)}`, dot])
     );
@@ -791,8 +812,8 @@ if (countdown) {
           const previousDot = previousDots.get(key);
           const color = previousDot?.color
             ?? palette[Math.floor(dotRandom(column, row, 11) * palette.length)];
-          const radius = previousDot?.radius
-            ?? gap * (.18 + dotRandom(column, row, 29) * .21);
+          const sizeRandom = dotRandom(column, row, 29);
+          const radius = gap * (.18 + sizeRandom * .2);
           nextDots.push({
             baseX: x,
             baseY: y,
@@ -816,7 +837,25 @@ if (countdown) {
       groupCursor += width + (index < groupWidths.length - 1 ? separatorWidth : 0);
       return center;
     });
-    labelY = Math.min(displayHeight - 2, numberCenterY + fontSize * .55 + 17);
+    glassCards.forEach((card, index) => {
+      const previousCenter = labelCenters[index - 1];
+      const nextCenter = labelCenters[index + 1];
+      const neighboringDistance = Math.min(
+        previousCenter === undefined ? Infinity : labelCenters[index] - previousCenter,
+        nextCenter === undefined ? Infinity : nextCenter - labelCenters[index]
+      );
+      const availableWidth = Number.isFinite(neighboringDistance)
+        ? neighboringDistance - Math.max(12, separatorWidth * .28)
+        : groupWidths[index] + fontSize * .42;
+      const desiredWidth = groupWidths[index] + Math.max(28, fontSize * .42);
+      const glassWidth = Math.max(groupWidths[index] + 16, Math.min(desiredWidth, availableWidth));
+
+      card.style.left = `${labelCenters[index]}px`;
+      card.style.top = `${glassTop}px`;
+      card.style.width = `${glassWidth}px`;
+      card.style.height = `${glassHeight}px`;
+      card.classList.add("is-ready");
+    });
     maskDirty = false;
   }
 
@@ -853,10 +892,11 @@ if (countdown) {
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
-    context.font = `700 ${Math.max(12, Math.min(17, displayWidth / 65))}px "Open Sans", sans-serif`;
+    context.font = `700 ${labelFontSize}px "Open Sans", sans-serif`;
     context.fillStyle = "#111";
+    const labelTracking = Math.max(1, Math.min(1.8, displayWidth / 650));
     labels.forEach((label, index) => {
-      context.fillText(label, labelCenters[index], labelY);
+      drawTrackedLabel(label, labelCenters[index], labelY, labelTracking);
     });
 
     if (!reducedMotion) countdownFrame = window.requestAnimationFrame(drawCountdown);
