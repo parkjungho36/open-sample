@@ -832,8 +832,10 @@ if (submitPage) {
   const platformOtherInput = submitPage.querySelector("[data-platform-other]");
   const formStatus = applicationForm.querySelector(".form-status");
   const submitButton = applicationForm.querySelector('button[type="submit"]');
+  const applicationTitle = submitPage.querySelector("[data-application-title]");
   const successTitle = submitPage.querySelector("#submit-success-title");
   const successTeam = submitPage.querySelector("[data-success-team]");
+  const submitAnotherButton = submitPage.querySelector("[data-submit-another]");
   const confettiCanvas = submitPage.querySelector("[data-confetti]");
   const discardDialog = submitPage.querySelector("[data-discard-dialog]");
   const discardClose = submitPage.querySelector("[data-discard-close]");
@@ -1471,6 +1473,16 @@ if (submitPage) {
     });
   }
 
+  function startAnotherSubmission() {
+    clearApplicationDraft();
+    applicationView.hidden = false;
+    successTeam.textContent = "";
+    window.scrollTo({ top: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => {
+      applicationTitle.focus({ preventScroll: true });
+    });
+  }
+
   function updateConsentRow(key, agreed) {
     consentState[key] = agreed;
     const trigger = submitPage.querySelector(`[data-consent-trigger="${key}"]`);
@@ -1534,6 +1546,7 @@ if (submitPage) {
     updateConsentRow("international", false);
     selectedCountryCode = "";
     pendingCountryCode = "";
+    countryInput.value = "";
     internationalConsent.hidden = true;
     renderCountrySelection("");
     countryTrigger.setAttribute("aria-invalid", "false");
@@ -1670,6 +1683,7 @@ if (submitPage) {
   switchAccountButtons.forEach((button) => {
     button.addEventListener("click", requestAccountSwitch);
   });
+  submitAnotherButton.addEventListener("click", startAnotherSubmission);
 
   applicationForm.addEventListener("submit", (event) => {
     event.preventDefault();
