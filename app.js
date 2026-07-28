@@ -17,11 +17,15 @@ function syncHeaderTheme() {
 }
 
 function route() {
-  const requestedRoute = location.hash.slice(1) || "home";
+  const requestedHash = location.hash.slice(1) || "home";
+  const [requestedRoute, requestedDetailsTarget] = requestedHash.split(":");
   const normalizedRoute = requestedRoute === "info" ? "home" : requestedRoute;
   const routeId = validRoutes.has(normalizedRoute) ? normalizedRoute : "home";
 
-  if (routeId !== activeRouteId && routeLeaveGuard?.(activeRouteId, routeId)) {
+  if (
+    routeId !== activeRouteId
+    && routeLeaveGuard?.(activeRouteId, routeId, { detailsTarget: requestedDetailsTarget })
+  ) {
     history.replaceState(null, "", `#${activeRouteId}`);
     return;
   }
@@ -43,10 +47,33 @@ function route() {
   }
 
   activeRouteId = routeId;
-  window.scrollTo({ top: 0, behavior: "auto" });
-  window.requestAnimationFrame(() => {
+  const detailsTarget = routeId === "apply" && requestedDetailsTarget
+    ? document.getElementById(requestedDetailsTarget)
+    : null;
+
+  if (detailsTarget) {
+    const detailsFold = detailsTarget.closest(".details-fold");
+    if (detailsFold instanceof HTMLDetailsElement) detailsFold.open = true;
+    const detailsAnchorId = detailsFold?.id;
+    document.querySelectorAll("[data-details-anchor]").forEach((link) => {
+      if (link.dataset.detailsAnchor === detailsAnchorId) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        detailsTarget.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          block: "start"
+        });
+        detailsTarget.focus({ preventScroll: true });
+      });
+    });
+  } else {
     window.scrollTo({ top: 0, behavior: "auto" });
-  });
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }
   syncHeaderTheme();
 }
 
@@ -1600,13 +1627,18 @@ if (submitPage) {
     });
   }
 
-  routeLeaveGuard = (fromRoute, toRoute) => {
+  routeLeaveGuard = (fromRoute, toRoute, routeContext = {}) => {
     if (allowNextRouteChange) {
       allowNextRouteChange = false;
       return false;
     }
     if (fromRoute !== "submit" || toRoute === "submit" || !hasUnsavedApplication()) return false;
-    openDiscardDialog({ type: "route", routeId: toRoute, hasDraft: true });
+    openDiscardDialog({
+      type: "route",
+      routeId: toRoute,
+      detailsTarget: routeContext.detailsTarget,
+      hasDraft: true
+    });
     return true;
   };
 
@@ -1680,7 +1712,9 @@ if (submitPage) {
     }
     clearApplicationDraft();
     allowNextRouteChange = true;
-    location.hash = action.routeId;
+    location.hash = action.detailsTarget
+      ? `${action.routeId}:${action.detailsTarget}`
+      : action.routeId;
   });
   discardDialog.addEventListener("close", () => {
     pendingDiscardAction = null;
