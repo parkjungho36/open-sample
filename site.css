@@ -2590,6 +2590,60 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   line-height: 1.6;
 }
 .consent-list { border-top: 1px solid var(--line); }
+.account-contact-field {
+  min-height: 132px;
+  padding: 24px 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 38%);
+  align-items: center;
+  gap: 32px;
+  border-bottom: 1px solid var(--line);
+}
+.account-contact-field > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+.account-contact-field > span:first-child strong {
+  font-size: clamp(17px, 1.7vw, 21px);
+  font-weight: 500;
+}
+.account-contact-field small {
+  color: #888;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.account-contact-value {
+  min-height: 48px;
+  padding: 10px 14px;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #cfcfcf;
+  border-radius: .38rem;
+  background: #fafafa;
+}
+.account-contact-value > strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-contact-value > button {
+  padding: 0;
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 1px solid #888;
+  color: #555;
+  background: transparent;
+  font-size: 11px;
+  cursor: pointer;
+}
 .country-consent-field {
   min-height: 132px;
   padding: 24px 4px;
@@ -3552,6 +3606,85 @@ footer { background: var(--ink); color: #fff; padding: 22px var(--pad); display:
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.discard-dialog {
+  width: min(calc(100% - 36px), 560px);
+  padding: 0;
+  border: 0;
+  border-radius: .38rem;
+  color: var(--ink);
+  background: #fff;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .22);
+}
+.discard-dialog::backdrop {
+  background: rgba(0, 0, 0, .56);
+  backdrop-filter: blur(3px);
+}
+.discard-dialog-frame {
+  padding: 38px 36px 32px;
+  position: relative;
+}
+.discard-dialog-close {
+  width: 38px;
+  height: 38px;
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  color: var(--ink);
+  background: #fff;
+  cursor: pointer;
+}
+.discard-dialog-close svg {
+  width: 17px;
+  height: 17px;
+}
+.discard-dialog .kicker {
+  margin: 0 56px 18px 0;
+}
+.discard-dialog h2 {
+  margin: 0;
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 400;
+  letter-spacing: -.06em;
+  line-height: 1.04;
+}
+.discard-dialog-frame > p:not(.kicker) {
+  margin: 24px 0 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+.discard-dialog footer {
+  margin-top: 34px;
+  padding: 22px 0 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  background: #fff;
+}
+.discard-dialog footer button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.discard-dialog-cancel {
+  color: var(--ink);
+  background: #fff;
+}
+.discard-dialog-confirm {
+  color: #fff;
+  background: var(--ink);
+}
 .terms-dialog {
   width: min(calc(100% - 36px), 760px);
   max-height: min(86svh, 760px);
@@ -3709,6 +3842,13 @@ body.terms-modal-open { overflow: hidden; }
     line-height: .9;
   }
   .application-section-title h2 { font-size: 32px; }
+  .account-contact-field {
+    min-height: 156px;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 20px;
+  }
+  .account-contact-value { width: 100%; }
   .country-consent-field {
     min-height: 156px;
     grid-template-columns: 1fr;
@@ -3799,6 +3939,22 @@ body.terms-modal-open { overflow: hidden; }
     gap: 14px;
   }
   .submit-success-socials > span { margin: 0; }
+  .discard-dialog {
+    width: calc(100% - 24px);
+  }
+  .discard-dialog-frame {
+    padding: 34px 22px 22px;
+  }
+  .discard-dialog-close {
+    top: 18px;
+    right: 18px;
+  }
+  .discard-dialog h2 { font-size: 34px; }
+  .discard-dialog footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+  .discard-dialog footer button { width: 100%; }
   .terms-dialog header { padding: 22px 20px 18px; }
   .terms-scroll { padding: 22px 20px 52px; }
   .terms-dialog footer {

@@ -2,6 +2,8 @@ const pages = [...document.querySelectorAll("[data-page]")];
 const routeLinks = [...document.querySelectorAll("[data-route]")];
 const validRoutes = new Set(pages.map((page) => page.id));
 const siteHeader = document.querySelector(".nav");
+let activeRouteId = pages.find((page) => page.classList.contains("active"))?.id || "home";
+let routeLeaveGuard = null;
 
 window.lucide?.createIcons();
 
@@ -19,6 +21,11 @@ function route() {
   const normalizedRoute = requestedRoute === "info" ? "home" : requestedRoute;
   const routeId = validRoutes.has(normalizedRoute) ? normalizedRoute : "home";
 
+  if (routeId !== activeRouteId && routeLeaveGuard?.(activeRouteId, routeId)) {
+    history.replaceState(null, "", `#${activeRouteId}`);
+    return;
+  }
+
   pages.forEach((page) => {
     const isActive = page.id === routeId;
     page.classList.toggle("active", isActive);
@@ -35,6 +42,7 @@ function route() {
     history.replaceState(null, "", `#${routeId}`);
   }
 
+  activeRouteId = routeId;
   window.scrollTo({ top: 0, behavior: "auto" });
   window.requestAnimationFrame(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -788,10 +796,10 @@ if (submitPage) {
   const googleSlot = submitPage.querySelector("[data-google-signin-slot]");
   const googleFallback = submitPage.querySelector("[data-google-signin-fallback]");
   const authStatus = submitPage.querySelector("[data-auth-status]");
-  const accountEmail = submitPage.querySelector("[data-account-email]");
+  const accountEmails = [...submitPage.querySelectorAll("[data-account-email]")];
   const accountAvatar = submitPage.querySelector("[data-account-avatar]");
   const applicantEmail = submitPage.querySelector("[data-applicant-email]");
-  const switchAccount = submitPage.querySelector("[data-switch-account]");
+  const switchAccountButtons = [...submitPage.querySelectorAll("[data-switch-account]")];
   const applicationForm = submitPage.querySelector("[data-application-form]");
   const termsDialog = submitPage.querySelector("[data-terms-dialog]");
   const termsTitle = submitPage.querySelector("[data-terms-title]");
@@ -827,6 +835,10 @@ if (submitPage) {
   const successTitle = submitPage.querySelector("#submit-success-title");
   const successTeam = submitPage.querySelector("[data-success-team]");
   const confettiCanvas = submitPage.querySelector("[data-confetti]");
+  const discardDialog = submitPage.querySelector("[data-discard-dialog]");
+  const discardClose = submitPage.querySelector("[data-discard-close]");
+  const discardCancel = submitPage.querySelector("[data-discard-cancel]");
+  const discardConfirm = submitPage.querySelector("[data-discard-confirm]");
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
@@ -865,6 +877,9 @@ if (submitPage) {
   let thumbnailObjectUrl = "";
   let validationRules = [];
   let hasSubmittedForm = false;
+  let formIsDirty = false;
+  let pendingDiscardAction = null;
+  let allowNextRouteChange = false;
   const touchedValidationKeys = new Set();
 
   function readStoredAccount() {
@@ -906,7 +921,9 @@ if (submitPage) {
 
     if (!isAuthenticated) return;
 
-    accountEmail.textContent = account.email;
+    accountEmails.forEach((element) => {
+      element.textContent = account.email;
+    });
     applicantEmail.value = account.email;
     accountAvatar.replaceChildren();
 
@@ -1081,9 +1098,11 @@ if (submitPage) {
 
   function confirmCountrySelection() {
     if (!pendingCountryCode) return;
+    const countryChanged = countryInput.value !== pendingCountryCode;
     countryInput.value = pendingCountryCode;
     renderCountrySelection(pendingCountryCode);
     syncCountryConsent(false);
+    if (countryChanged) formIsDirty = true;
     touchedValidationKeys.add("representative-country");
     refreshValidationRule("representative-country", true);
     refreshValidationRule("international-consent");
@@ -1473,6 +1492,7 @@ if (submitPage) {
   function showSubmissionSuccess() {
     const teamName = applicationForm.elements.namedItem("team-name").value.trim();
     successTeam.textContent = teamName ? `${teamName}의 신청서가 접수되었습니다.` : "";
+    formIsDirty = false;
     applicationView.hidden = true;
     successView.hidden = false;
     submitButton.disabled = true;
@@ -1521,6 +1541,65 @@ if (submitPage) {
     if (termsDialog.open) termsDialog.close();
   }
 
+  function hasUnsavedApplication() {
+    return activeRouteId === "submit" && formIsDirty && !applicationView.hidden && successView.hidden;
+  }
+
+  function openDiscardDialog(action) {
+    if (!discardDialog || discardDialog.open) return;
+    pendingDiscardAction = action;
+    discardConfirm.textContent = action.type === "switch" ? "계정 변경" : "페이지 나가기";
+    discardDialog.showModal();
+    document.body.classList.add("terms-modal-open");
+    window.requestAnimationFrame(() => discardCancel.focus());
+  }
+
+  function closeDiscardDialog() {
+    if (discardDialog?.open) discardDialog.close();
+  }
+
+  function clearApplicationDraft() {
+    applicationForm.reset();
+    resetProjectFields();
+    updateConsentRow("event", false);
+    updateConsentRow("privacy", false);
+    updateConsentRow("international", false);
+    selectedCountryCode = "";
+    pendingCountryCode = "";
+    internationalConsent.hidden = true;
+    renderCountrySelection("");
+    countryTrigger.setAttribute("aria-invalid", "false");
+    countryError.hidden = true;
+    successView.hidden = true;
+    formIsDirty = false;
+    resetValidationFeedback();
+    applicantEmail.value = readStoredAccount()?.email || "";
+  }
+
+  function performSwitchAccount() {
+    clearApplicationDraft();
+    window.google?.accounts?.id?.disableAutoSelect();
+    setAccount(null);
+  }
+
+  function requestAccountSwitch() {
+    if (hasUnsavedApplication()) {
+      openDiscardDialog({ type: "switch" });
+      return;
+    }
+    performSwitchAccount();
+  }
+
+  routeLeaveGuard = (fromRoute, toRoute) => {
+    if (allowNextRouteChange) {
+      allowNextRouteChange = false;
+      return false;
+    }
+    if (fromRoute !== "submit" || toRoute === "submit" || !hasUnsavedApplication()) return false;
+    openDiscardDialog({ type: "route", routeId: toRoute });
+    return true;
+  };
+
   buildCountryOptions();
   renderCountrySelection("");
   countryTrigger.addEventListener("click", openCountryDialog);
@@ -1543,11 +1622,18 @@ if (submitPage) {
   createValidationRules();
   bindValidationFeedback();
   resetValidationFeedback();
+  applicationForm.addEventListener("input", () => {
+    formIsDirty = true;
+  });
+  applicationForm.addEventListener("change", () => {
+    formIsDirty = true;
+  });
 
   submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
       const key = trigger.dataset.consentTrigger;
       if (consentState[key]) {
+        formIsDirty = true;
         touchedValidationKeys.add(`${key}-consent`);
         updateConsentRow(key, false);
         return;
@@ -1560,6 +1646,7 @@ if (submitPage) {
   termsClose.addEventListener("click", closeTerms);
   termsAccept.addEventListener("click", () => {
     if (termsAccept.disabled || !activeConsent) return;
+    formIsDirty = true;
     touchedValidationKeys.add(`${activeConsent}-consent`);
     updateConsentRow(activeConsent, true);
     closeTerms();
@@ -1570,6 +1657,32 @@ if (submitPage) {
   });
   termsDialog.addEventListener("click", (event) => {
     if (event.target === termsDialog) closeTerms();
+  });
+  discardClose.addEventListener("click", closeDiscardDialog);
+  discardCancel.addEventListener("click", closeDiscardDialog);
+  discardConfirm.addEventListener("click", () => {
+    const action = pendingDiscardAction;
+    closeDiscardDialog();
+    if (!action) return;
+    if (action.type === "switch") {
+      performSwitchAccount();
+      return;
+    }
+    clearApplicationDraft();
+    allowNextRouteChange = true;
+    location.hash = action.routeId;
+  });
+  discardDialog.addEventListener("close", () => {
+    pendingDiscardAction = null;
+    document.body.classList.remove("terms-modal-open");
+  });
+  discardDialog.addEventListener("click", (event) => {
+    if (event.target === discardDialog) closeDiscardDialog();
+  });
+  window.addEventListener("beforeunload", (event) => {
+    if (!hasUnsavedApplication()) return;
+    event.preventDefault();
+    event.returnValue = "";
   });
 
   googleFallback.addEventListener("click", () => {
@@ -1586,21 +1699,8 @@ if (submitPage) {
     });
   });
 
-  switchAccount.addEventListener("click", () => {
-    applicationForm.reset();
-    resetProjectFields();
-    updateConsentRow("event", false);
-    updateConsentRow("privacy", false);
-    updateConsentRow("international", false);
-    selectedCountryCode = "";
-    pendingCountryCode = "";
-    internationalConsent.hidden = true;
-    renderCountrySelection("");
-    countryTrigger.setAttribute("aria-invalid", "false");
-    countryError.hidden = true;
-    resetValidationFeedback();
-    window.google?.accounts?.id?.disableAutoSelect();
-    setAccount(null);
+  switchAccountButtons.forEach((button) => {
+    button.addEventListener("click", requestAccountSwitch);
   });
 
   applicationForm.addEventListener("submit", (event) => {
