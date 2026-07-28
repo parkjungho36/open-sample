@@ -295,7 +295,7 @@
       <nav class="details-anchor-nav" aria-label="상세정보 바로가기">
         <div class="details-anchor-inner shell">
           <span class="details-anchor-label">GO TO</span>
-          <a href="#event-details" data-details-anchor="event-details">Event Details</a>
+          <a href="#event-details" data-details-anchor="event-details" aria-current="true">Event Details</a>
           <a href="#track-1" data-details-anchor="track-1">Track 1</a>
           <a href="#track-2" data-details-anchor="track-2">Track 2</a>
         </div>
@@ -406,11 +406,11 @@
                       <tr><th scope="col">평가 항목</th><th scope="col">배점</th></tr>
                     </thead>
                     <tbody>
-                      <tr><th scope="row">재미와 플레이 완성도 <small>Playability</small></th><td>30</td></tr>
-                      <tr><th scope="row">아이디어와 독창성 <small>Originality</small></th><td>20</td></tr>
-                      <tr><th scope="row">Codex 활용도 <small>Codex Collaboration</small></th><td>25</td></tr>
-                      <tr><th scope="row">HIVE 확장 가능성 <small>Release Potential</small></th><td>15</td></tr>
-                      <tr><th scope="row">PT 및 데모 완성도 <small>Presentation</small></th><td>10</td></tr>
+                      <tr data-criterion="playability" tabindex="0"><th scope="row">재미와 플레이 완성도 <small>Playability</small></th><td>30</td></tr>
+                      <tr data-criterion="originality" tabindex="0"><th scope="row">아이디어와 독창성 <small>Originality</small></th><td>20</td></tr>
+                      <tr data-criterion="codex-collaboration" tabindex="0"><th scope="row">Codex 활용도 <small>Codex Collaboration</small></th><td>25</td></tr>
+                      <tr data-criterion="release-potential" tabindex="0"><th scope="row">HIVE 확장 가능성 <small>Release Potential</small></th><td>15</td></tr>
+                      <tr data-criterion="presentation" tabindex="0"><th scope="row">PT 및 데모 완성도 <small>Presentation</small></th><td>10</td></tr>
                     </tbody>
                     <tfoot>
                       <tr><th scope="row">TOTAL</th><td>100</td></tr>
@@ -419,11 +419,11 @@
                 </div>
 
                 <div class="criteria-grid">
-                  <article><span>01</span><h3>Playability</h3><p>게임이 실제로 잘 작동하는가?</p></article>
-                  <article><span>02</span><h3>Originality</h3><p>아이디어와 플레이가 독창적인가?</p></article>
-                  <article><span>03</span><h3>Codex Collaboration</h3><p>Codex를 효과적으로 활용했는가?</p></article>
-                  <article><span>04</span><h3>Release Potential</h3><p>HIVE를 통해 서비스로 확장할 수 있는가?</p></article>
-                  <article><span>05</span><h3>Presentation</h3><p>게임과 개발 과정이 명확하게 전달되는가?</p></article>
+                  <article data-criterion="playability" tabindex="0"><span>01</span><h3>Playability</h3><p>게임이 실제로 잘 작동하는가?</p></article>
+                  <article data-criterion="originality" tabindex="0"><span>02</span><h3>Originality</h3><p>아이디어와 플레이가 독창적인가?</p></article>
+                  <article data-criterion="codex-collaboration" tabindex="0"><span>03</span><h3>Codex Collaboration</h3><p>Codex를 효과적으로 활용했는가?</p></article>
+                  <article data-criterion="release-potential" tabindex="0"><span>04</span><h3>Release Potential</h3><p>HIVE를 통해 서비스로 확장할 수 있는가?</p></article>
+                  <article data-criterion="presentation" tabindex="0"><span>05</span><h3>Presentation</h3><p>게임과 개발 과정이 명확하게 전달되는가?</p></article>
                 </div>
               </div>
             </section>
@@ -452,28 +452,6 @@
               <p>Codex와 함께 게임 아이디어를 구현하세요.</p>
             </div>
           </div>
-          <dl class="details-snapshot" aria-label="Track 1 핵심 정보">
-            <div>
-              <dt>MODE</dt>
-              <dd>온라인 예선</dd>
-            </div>
-            <div>
-              <dt>TEAM</dt>
-              <dd>1—3인</dd>
-            </div>
-            <div>
-              <dt>BUILD</dt>
-              <dd>플레이 가능한 게임</dd>
-            </div>
-            <div>
-              <dt>SUBMIT</dt>
-              <dd>게임 링크</dd>
-            </div>
-            <div>
-              <dt>FINALISTS</dt>
-              <dd>40팀</dd>
-            </div>
-          </dl>
         </summary>
 
         <div class="details-fold-body">
@@ -640,28 +618,6 @@
               <p>Codex를 통해 즉석에서 바로 플레이 가능한 게임을 개발하세요.</p>
             </div>
           </div>
-          <dl class="details-snapshot" aria-label="Track 2 핵심 정보">
-            <div>
-              <dt>MODE</dt>
-              <dd>서울 현장</dd>
-            </div>
-            <div>
-              <dt>ELIGIBILITY</dt>
-              <dd>Track 1 본선팀</dd>
-            </div>
-            <div>
-              <dt>BUILD</dt>
-              <dd>당일 미니게임</dd>
-            </div>
-            <div>
-              <dt>SUBMIT</dt>
-              <dd>공개 게임 링크</dd>
-            </div>
-            <div>
-              <dt>RESULT</dt>
-              <dd>현장 인기 투표</dd>
-            </div>
-          </dl>
         </summary>
 
         <div class="details-fold-body">
