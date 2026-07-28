@@ -2937,7 +2937,6 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   width: 118px;
   margin: 0 auto 58px;
 }
-.application-header > .kicker { margin-bottom: 34px; }
 .application-header h1 {
   margin: 0;
   font-size: clamp(54px, 7.2vw, 96px);
@@ -3060,6 +3059,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .application-section-title {
   display: grid;
   grid-template-columns: 110px minmax(0, 1fr);
+  align-items: start;
   gap: 30px;
   margin-bottom: 52px;
 }
@@ -3069,7 +3069,6 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   letter-spacing: -.07em;
   line-height: .8;
 }
-.application-section-title .kicker { margin-bottom: 12px; }
 .application-section-title h2 {
   margin: 0;
   font-size: clamp(34px, 4.4vw, 56px);
@@ -3863,7 +3862,11 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   color: #fff;
   background: #111;
 }
-.main-submission .submission-type { color: #aaa; }
+.main-submission .submission-type {
+  color: #d56f4b;
+  font-size: 11px;
+  letter-spacing: 0;
+}
 .main-submission .project-label { color: #fff; }
 .main-submission input:not([type="file"]) {
   color: #fff;
