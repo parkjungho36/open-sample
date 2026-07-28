@@ -810,6 +810,17 @@ if (submitPage) {
   const countryCancel = submitPage.querySelector("[data-country-cancel]");
   const countryConfirm = submitPage.querySelector("[data-country-confirm]");
   const internationalConsent = submitPage.querySelector('[data-consent-trigger="international"]');
+  const thumbnailInput = submitPage.querySelector("[data-thumbnail-input]");
+  const thumbnailEmpty = submitPage.querySelector("[data-thumbnail-empty]");
+  const thumbnailPreview = submitPage.querySelector("[data-thumbnail-preview]");
+  const thumbnailImage = submitPage.querySelector("[data-thumbnail-image]");
+  const thumbnailName = submitPage.querySelector("[data-thumbnail-name]");
+  const thumbnailStatus = submitPage.querySelector("[data-thumbnail-status]");
+  const gameDescription = submitPage.querySelector("[data-game-description]");
+  const descriptionCount = submitPage.querySelector("[data-description-count]");
+  const platformOptions = [...submitPage.querySelectorAll('input[name="game-platform"]')];
+  const platformOtherWrap = submitPage.querySelector("[data-platform-other-wrap]");
+  const platformOtherInput = submitPage.querySelector("[data-platform-other]");
   const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
@@ -845,6 +856,7 @@ if (submitPage) {
   let googleInitialized = false;
   let selectedCountryCode = "";
   let pendingCountryCode = "";
+  let thumbnailObjectUrl = "";
 
   function readStoredAccount() {
     try {
@@ -1066,6 +1078,60 @@ if (submitPage) {
     closeCountryDialog();
   }
 
+  function clearThumbnailPreview() {
+    if (thumbnailObjectUrl) URL.revokeObjectURL(thumbnailObjectUrl);
+    thumbnailObjectUrl = "";
+    thumbnailImage.removeAttribute("src");
+    thumbnailName.textContent = "";
+    thumbnailPreview.hidden = true;
+    thumbnailEmpty.hidden = false;
+  }
+
+  function updateThumbnailPreview() {
+    const file = thumbnailInput.files?.[0];
+    clearThumbnailPreview();
+    thumbnailInput.setCustomValidity("");
+    thumbnailStatus.textContent = "";
+
+    if (!file) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      thumbnailInput.setCustomValidity("JPG 또는 PNG 이미지를 선택해주세요.");
+      thumbnailStatus.textContent = "JPG 또는 PNG 이미지만 업로드할 수 있습니다.";
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      thumbnailInput.setCustomValidity("10MB 이하의 이미지를 선택해주세요.");
+      thumbnailStatus.textContent = "파일 크기는 최대 10MB까지 가능합니다.";
+      return;
+    }
+
+    thumbnailObjectUrl = URL.createObjectURL(file);
+    thumbnailImage.src = thumbnailObjectUrl;
+    thumbnailName.textContent = file.name;
+    thumbnailEmpty.hidden = true;
+    thumbnailPreview.hidden = false;
+  }
+
+  function updateDescriptionCount() {
+    descriptionCount.textContent = String(gameDescription.value.length);
+  }
+
+  function updatePlatformOther() {
+    const selectedPlatform = platformOptions.find((option) => option.checked)?.value;
+    const isOther = selectedPlatform === "Other";
+    platformOtherWrap.hidden = !isOther;
+    platformOtherInput.required = isOther;
+    if (!isOther) platformOtherInput.value = "";
+  }
+
+  function resetProjectFields() {
+    clearThumbnailPreview();
+    thumbnailInput.setCustomValidity("");
+    thumbnailStatus.textContent = "";
+    updateDescriptionCount();
+    updatePlatformOther();
+  }
+
   function updateConsentRow(key, agreed) {
     consentState[key] = agreed;
     const trigger = submitPage.querySelector(`[data-consent-trigger="${key}"]`);
@@ -1114,6 +1180,12 @@ if (submitPage) {
   countryDialog.addEventListener("click", (event) => {
     if (event.target === countryDialog) closeCountryDialog();
   });
+  thumbnailInput.addEventListener("change", updateThumbnailPreview);
+  gameDescription.addEventListener("input", updateDescriptionCount);
+  platformOptions.forEach((option) => {
+    option.addEventListener("change", updatePlatformOther);
+  });
+  resetProjectFields();
 
   submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
@@ -1157,6 +1229,7 @@ if (submitPage) {
 
   switchAccount.addEventListener("click", () => {
     applicationForm.reset();
+    resetProjectFields();
     updateConsentRow("event", false);
     updateConsentRow("privacy", false);
     updateConsentRow("international", false);

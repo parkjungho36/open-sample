@@ -906,6 +906,127 @@
                 </fieldset>
               </fieldset>
 
+            </section>
+
+            <section class="application-section project-section" aria-labelledby="project-title">
+              <div class="application-section-title">
+                <span>03</span>
+                <div>
+                  <p class="kicker">PROJECT SUBMISSION</p>
+                  <h2 id="project-title">프로젝트 제출</h2>
+                  <p>게임 심사에 필요한 플레이 정보와 프로젝트 자료를 제출해주세요.</p>
+                </div>
+              </div>
+
+              <p class="required-note"><sup>*</sup> 필수 질문</p>
+              <div class="project-fields">
+                <section class="project-field thumbnail-field" aria-labelledby="thumbnail-label">
+                  <div class="project-field-heading">
+                    <div>
+                      <h3 id="thumbnail-label">게임 썸네일 업로드<sup>*</sup></h3>
+                      <p>명확한 1:1 썸네일은 심사 과정에서 게임을 더 잘 보여줍니다. JPG 또는 PNG 형식을 권장합니다.</p>
+                    </div>
+                    <span>1:1 · 최대 10MB</span>
+                  </div>
+                  <label class="thumbnail-upload">
+                    <input type="file" name="game-thumbnail" accept="image/jpeg,image/png" data-thumbnail-input required>
+                    <span class="thumbnail-empty" data-thumbnail-empty>
+                      <i data-lucide="upload" aria-hidden="true"></i>
+                      <strong>이미지 선택</strong>
+                      <small>JPG 또는 PNG 파일을 업로드해주세요.</small>
+                    </span>
+                    <span class="thumbnail-preview" data-thumbnail-preview hidden>
+                      <img alt="" data-thumbnail-image>
+                      <span>
+                        <strong data-thumbnail-name></strong>
+                        <small>클릭하여 다른 이미지 선택</small>
+                      </span>
+                    </span>
+                  </label>
+                  <p class="project-tip"><i data-lucide="lightbulb" aria-hidden="true"></i> 1:1 비율, 최대 10MB를 권장합니다.</p>
+                  <p class="thumbnail-status" data-thumbnail-status aria-live="polite"></p>
+                </section>
+
+                <div class="project-form-grid">
+                  <label class="project-field">
+                    <span class="project-label">게임 제목<sup>*</sup></span>
+                    <small>심사위원에게 공개할 최종 제목을 입력해주세요.</small>
+                    <input name="game-title" maxlength="80" required>
+                  </label>
+
+                  <label class="project-field description-field">
+                    <span class="project-label">게임 소개<sup>*</sup></span>
+                    <small>게임을 100자 이내로 짧게 소개해주세요.</small>
+                    <textarea name="game-description" maxlength="100" rows="4" data-game-description required></textarea>
+                    <span class="character-count"><b data-description-count>0</b>/100</span>
+                  </label>
+                </div>
+
+                <fieldset class="project-field platform-field">
+                  <legend>게임 플랫폼<sup>*</sup></legend>
+                  <p>게임이 플레이되도록 설계된 주요 플랫폼을 하나 선택해주세요.</p>
+                  <div class="platform-options">
+                    <label>
+                      <input type="radio" name="game-platform" value="PC" required>
+                      <span><strong>PC</strong><small>데스크톱 운영체제용 게임</small><em>Windows, macOS, Linux 등</em></span>
+                    </label>
+                    <label>
+                      <input type="radio" name="game-platform" value="Web">
+                      <span><strong>Web</strong><small>브라우저 또는 웹 환경용 게임</small><em>HTML5, WebGL, Standalone 등</em></span>
+                    </label>
+                    <label>
+                      <input type="radio" name="game-platform" value="Mobile">
+                      <span><strong>Mobile</strong><small>모바일 기기용 게임</small><em>iOS, Android</em></span>
+                    </label>
+                    <label>
+                      <input type="radio" name="game-platform" value="Console">
+                      <span><strong>Console</strong><small>주요 콘솔 플랫폼용 게임</small><em>PlayStation, Xbox, Nintendo Switch 등</em></span>
+                    </label>
+                    <label class="platform-other-option">
+                      <input type="radio" name="game-platform" value="Other">
+                      <span><strong>Other</strong><small>목록에 없는 다른 플랫폼</small></span>
+                    </label>
+                  </div>
+                  <label class="platform-other-input" data-platform-other-wrap hidden>
+                    <span>기타 플랫폼 직접 입력<sup>*</sup></span>
+                    <input name="game-platform-other" data-platform-other>
+                  </label>
+                </fieldset>
+
+                <section class="project-field main-submission" aria-labelledby="game-link-label">
+                  <div class="submission-type">MAIN SUBMISSION</div>
+                  <label>
+                    <span class="project-label" id="game-link-label">플레이 가능한 게임 링크<sup>*</sup></span>
+                    <input name="playable-game-link" type="url" inputmode="url" placeholder="https://" required>
+                  </label>
+                  <div class="submission-guidance">
+                    <p>심사를 위해 브라우저에서 바로 실행되는 웹 빌드와 플레이 가능한 링크를 제출해주세요.</p>
+                    <ul>
+                      <li>게임의 핵심 재미가 구현되어 있어야 합니다.</li>
+                      <li>심사 기간 동안 심사위원이 핵심 기능을 직접 플레이할 수 있어야 합니다.</li>
+                      <li>기존 프로젝트를 활용할 경우 챌린지 기간에 새롭게 개발한 내용을 명기해주세요.</li>
+                    </ul>
+                    <a href="#apply">상세한 제출 조건 확인하기 <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+                  </div>
+                </section>
+
+                <div class="bonus-submissions">
+                  <label class="project-field">
+                    <span class="submission-type">BONUS SUBMISSION</span>
+                    <span class="project-label">데모 영상 <em>선택</em></span>
+                    <small>실제 플레이가 포함된 3분 이내 영상 링크를 제출해주세요. 게임 소개, 실제 플레이, 핵심 기능을 포함할 수 있습니다.</small>
+                    <input name="demo-video-link" type="url" inputmode="url" placeholder="https://">
+                  </label>
+
+                  <label class="project-field">
+                    <span class="submission-type">BONUS SUBMISSION</span>
+                    <span class="project-label">Codex와 함께 게임을 만든 과정 <em>선택</em></span>
+                    <small>Codex를 사용한 부분, 구현한 기능, 해결한 문제와 사람이 직접 결정한 내용을 설명해주세요.</small>
+                    <textarea name="codex-process" rows="6" placeholder="어디에 사용했고, 무엇을 구현했으며, 어떤 문제를 해결했나요?"></textarea>
+                  </label>
+                </div>
+              </div>
+
               <div class="application-submit">
                 <button type="submit">신청서 제출하기</button>
                 <p class="form-status" aria-live="polite"></p>
