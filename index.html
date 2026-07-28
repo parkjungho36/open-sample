@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="site.css?v=gallery-assets-v1">
 </head>
 <body>
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -31,7 +31,6 @@
   <main id="main-content">
     <section class="page active" id="home" data-page>
       <div class="hero shell">
-        <canvas class="hero-aurora" data-hero-aurora aria-hidden="true"></canvas>
         <div class="hero-symbol" aria-hidden="true">
           <img src="assets/openai-blossom.svg" alt="">
         </div>
@@ -254,47 +253,38 @@
       </section>
 
       <section class="guests shell" id="event-guests" aria-labelledby="guests-title">
-        <p class="kicker">INVITED GUESTS</p>
-        <div class="guests-layout">
-          <div>
-          <h2 id="guests-title">Inviting<br>Korean legends.</h2>
-          <p><strong>한국 게임을 만든 전설들이 한자리에.</strong><br>AI 활용 사례부터 실제 개발 경험까지,<br>게임의 다음을 이야기합니다.</p>
-          </div>
+        <p class="kicker" id="guests-title">INVITING KOREAN LEGENDS</p>
+        <p class="guests-intro"><strong>한국 게임을 만든 전설들이 한자리에.</strong>AI 활용 사례부터 실제 개발 경험까지, 게임의 다음을 이야기합니다.</p>
+        <div class="guest-gallery" aria-label="초청 게스트 갤러리">
           <div class="guest-list">
-            <article>
+            <article data-guest-index="0">
               <img class="guest-photo" src="assets/Inviting_1.png" alt="Song Jae-Kyung">
               <div class="guest-copy"><span>01</span><em>송재경</em><h3>Song Jae-Kyung</h3><p>대한민국 1세대 게임산업 개척자</p><small># 바람의 나라 # 리니지</small></div>
             </article>
-            <article>
+            <article data-guest-index="1">
               <img class="guest-photo" src="assets/Inviting_2.png" alt="Kang Dae-hyun">
               <div class="guest-copy"><span>02</span><em>강대현</em><h3>Kang Dae-hyun</h3><p>라이브 역량의 대가</p><small># 던전앤파이터 # 메이플 키우기</small></div>
             </article>
-            <article>
+            <article data-guest-index="2">
               <img class="guest-photo" src="assets/Inviting_3.png" alt="Lee Jeong-woong">
               <div class="guest-copy"><span>03</span><em>이정웅</em><h3>Lee Jeong-woong</h3><p>국민 게임 창시자</p><small># 애니팡 for Kakao # 애니팡2</small></div>
             </article>
-            <article>
+            <article data-guest-index="3">
               <img class="guest-photo" src="assets/Inviting_4.png" alt="Kim Dong-gyu">
               <div class="guest-copy"><span>04</span><em>김동규</em><h3>Kim Dong-gyu</h3><p>인디게임 · 1인 개발 게임 신화</p><small># 고양이와 스프 # 언데드 슬레이어</small></div>
             </article>
-            <div class="guest-hidden" aria-label="초청 게스트 라인업 공개 현황">
-              <div class="legend-meter" aria-hidden="true">
-                <span>♛</span>
-                <span>♛</span>
-                <span>♛</span>
-                <span>♛</span>
-                <span class="pending">♕</span>
-                <span class="pending">♕</span>
-                <span class="pending">♕</span>
-                <span class="pending">♕</span>
-                <span class="pending">♕</span>
-                <span class="pending">♕</span>
-              </div>
-              <div>
-                <strong>10 legends, 4 revealed</strong>
-                <p>Meet the Korean Game Legends.</p>
-              </div>
-            </div>
+            <article class="guest-card-placeholder" data-guest-index="4">
+              <div class="guest-photo guest-photo-placeholder"><img src="assets/openai-blossom.svg" alt=""></div>
+              <div class="guest-copy"><span>05</span><em>COMING SOON</em><h3>Next Legend</h3><p>다음 게스트를 곧 공개합니다.</p><small># New guest incoming</small></div>
+            </article>
+            <article class="guest-card-placeholder" data-guest-index="5">
+              <div class="guest-photo guest-photo-placeholder"><img src="assets/openai-blossom.svg" alt=""></div>
+              <div class="guest-copy"><span>06</span><em>COMING SOON</em><h3>Next Legend</h3><p>다음 게스트를 곧 공개합니다.</p><small># New guest incoming</small></div>
+            </article>
+            <article class="guest-card-placeholder" data-guest-index="6">
+              <div class="guest-photo guest-photo-placeholder"><img src="assets/openai-blossom.svg" alt=""></div>
+              <div class="guest-copy"><span>07</span><em>COMING SOON</em><h3>Next Legend</h3><p>다음 게스트를 곧 공개합니다.</p><small># New guest incoming</small></div>
+            </article>
           </div>
         </div>
       </section>
@@ -759,14 +749,30 @@
       </form>
     </section>
 
-    <section class="page simple shell" id="gallery" data-page aria-labelledby="gallery-title">
-      <p class="kicker">PLAYABLE IDEAS</p>
-      <h1 id="gallery-title">Made to be played.</h1>
-      <p class="page-lead">해커톤에서 탄생할 플레이 가능한 아이디어를 위한 공간입니다.</p>
-      <div class="gallery-cards">
-        <article><span>01</span><h2>MORI</h2><p>Story-driven adventure</p></article>
-        <article><span>02</span><h2>OFFLINE</h2><p>One-click social game</p></article>
-        <article><span>03</span><h2>SOUND MAP</h2><p>Audio exploration</p></article>
+    <section class="page gallery-page" id="gallery" data-page aria-labelledby="gallery-title">
+      <div class="gallery-hero shell">
+        <h1 id="gallery-title">아이디어에서<br>플레이할 수 있는 게임으로.</h1>
+        <p>OpenAI Game Hackathon 참가자들이 만든 게임을 만나보세요.</p>
+      </div>
+      <div class="gallery-browser shell">
+        <div class="gallery-toolbar">
+          <h2>작품 보기</h2>
+          <label class="gallery-search"><span class="sr-only">작품 검색</span><input type="search" data-gallery-search placeholder="작품 또는 제작자 검색"><img src="assets/search_icon.svg" alt="" aria-hidden="true"></label>
+        </div>
+        <div class="gallery-cards" data-gallery-list>
+          <article class="game-card" data-search="mori 모리 team ori 팀 오리 adventure"><div class="game-visual game-visual-mori" role="img" aria-label="달빛 숲을 탐험하는 MORI 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="MORI 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>128</b></button></div><div class="game-card-copy"><div><h3>MORI</h3><p>Team ORI</p></div><p class="game-genre">Story-driven adventure</p><div class="game-stats"><span>♥ <b data-heart-count>128</b></span><span>◉ <b>842</b></span></div></div></article>
+          <article class="game-card" data-search="offline 오프라인 patch note 패치 노트 social"><div class="game-visual game-visual-offline" role="img" aria-label="도시의 연결을 표현한 OFFLINE 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="OFFLINE 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>96</b></button></div><div class="game-card-copy"><div><h3>OFFLINE</h3><p>Patch Note</p></div><p class="game-genre">One-click social game</p><div class="game-stats"><span>♥ <b data-heart-count>96</b></span><span>◉ <b>631</b></span></div></div></article>
+          <article class="game-card" data-search="sound map 사운드 맵 audio atlas 오디오 아틀라스 rhythm"><div class="game-visual game-visual-sound" role="img" aria-label="음파 지형을 표현한 SOUND MAP 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="SOUND MAP 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>214</b></button></div><div class="game-card-copy"><div><h3>SOUND MAP</h3><p>Audio Atlas</p></div><p class="game-genre">Audio exploration</p><div class="game-stats"><span>♥ <b data-heart-count>214</b></span><span>◉ <b>1,204</b></span></div></div></article>
+          <article class="game-card" data-search="tiny orbit 타이니 오빗 studio 404 스튜디오 puzzle"><div class="game-visual game-visual-orbit" role="img" aria-label="작은 행성을 여행하는 TINY ORBIT 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="TINY ORBIT 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>172</b></button></div><div class="game-card-copy"><div><h3>TINY ORBIT</h3><p>Studio 404</p></div><p class="game-genre">Cozy puzzle journey</p><div class="game-stats"><span>♥ <b data-heart-count>172</b></span><span>◉ <b>978</b></span></div></div></article>
+          <article class="game-card" data-search="echo garden 에코 가든 green byte 그린 바이트 simulation"><div class="game-visual game-visual-garden" role="img" aria-label="식물이 자라는 ECHO GARDEN 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="ECHO GARDEN 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>83</b></button></div><div class="game-card-copy"><div><h3>ECHO GARDEN</h3><p>Green Byte</p></div><p class="game-genre">Generative garden simulation</p><div class="game-stats"><span>♥ <b data-heart-count>83</b></span><span>◉ <b>517</b></span></div></div></article>
+          <article class="game-card" data-search="neon runner 네온 러너 midnight lab 미드나잇 랩 action"><div class="game-visual game-visual-neon" role="img" aria-label="네온 도시를 달리는 NEON RUNNER 게임 이미지"><i class="art-one"></i><i class="art-two"></i><i class="art-three"></i><button class="game-like" type="button" aria-label="NEON RUNNER 좋아요" aria-pressed="false"><img src="assets/favorite-1.svg" alt=""><b>301</b></button></div><div class="game-card-copy"><div><h3>NEON RUNNER</h3><p>Midnight Lab</p></div><p class="game-genre">Rhythm action runner</p><div class="game-stats"><span>♥ <b data-heart-count>301</b></span><span>◉ <b>1,806</b></span></div></div></article>
+        </div>
+        <p class="gallery-empty" data-gallery-empty hidden>검색 결과가 없습니다.</p>
+        <nav class="gallery-pagination" data-gallery-pagination aria-label="작품 페이지">
+          <button type="button" data-page-prev aria-label="이전 페이지">‹</button>
+          <div data-page-numbers></div>
+          <button type="button" data-page-next aria-label="다음 페이지">›</button>
+        </nav>
       </div>
     </section>
   </main>
@@ -777,6 +783,6 @@
   </footer>
 
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=gallery-assets-v1"></script>
 </body>
 </html>
