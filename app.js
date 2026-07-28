@@ -1040,7 +1040,6 @@ if (submitPage) {
   const authStatus = submitPage.querySelector("[data-auth-status]");
   const accountEmails = [...submitPage.querySelectorAll("[data-account-email]")];
   const accountAvatar = submitPage.querySelector("[data-account-avatar]");
-  const applicantEmail = submitPage.querySelector("[data-applicant-email]");
   const switchAccountButtons = [...submitPage.querySelectorAll("[data-switch-account]")];
   const applicationForm = submitPage.querySelector("[data-application-form]");
   const termsDialog = submitPage.querySelector("[data-terms-dialog]");
@@ -1174,7 +1173,6 @@ if (submitPage) {
     accountEmails.forEach((element) => {
       element.textContent = account.email;
     });
-    applicantEmail.value = account.email;
     accountAvatar.replaceChildren();
 
     if (account.picture) {
@@ -1550,13 +1548,6 @@ if (submitPage) {
       inputRule("applicant-name", () => {
         return field("applicant-name").value.trim() ? "" : "성명을 입력해주세요.";
       }),
-      inputRule("email", () => {
-        const value = field("email").value.trim();
-        if (!value) return "이메일 주소를 입력해주세요.";
-        return field("email").validity.typeMismatch
-          ? "올바른 이메일 주소를 입력해주세요."
-          : "";
-      }),
       inputRule("team-name", () => {
         return field("team-name").value.trim() ? "" : "외부에 표시할 팀명을 입력해주세요.";
       }),
@@ -1826,7 +1817,6 @@ if (submitPage) {
     successView.hidden = true;
     formIsDirty = false;
     resetValidationFeedback();
-    applicantEmail.value = readStoredAccount()?.email || "";
   }
 
   function performSwitchAccount() {
