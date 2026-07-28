@@ -2586,6 +2586,40 @@ footer { background: var(--ink); color: #fff; padding: 22px 0; font-size: 12px; 
   .details-reward-link span { font-size: 30px; }
 }
 
+/* Details content: consistent reading hierarchy */
+.details-content .details-section-heading h2 {
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -.055em;
+}
+.details-content .details-section-heading .details-index {
+  color: #737373;
+  font-weight: 400;
+}
+.details-content .details-section-heading .kicker,
+.details-content .process-label,
+.details-content .process-marker,
+.details-content .principle-grid article > span {
+  color: #737373;
+}
+.details-content .principle-grid h3,
+.details-content .process-flow h3,
+.details-content .eligibility-card h3,
+.details-content .criteria-grid h3,
+.details-content .submission-table article > h3,
+.details-content .submission-title {
+  color: var(--ink);
+  font-weight: 600;
+}
+.details-content .principle-grid p,
+.details-content .process-flow article > p:last-of-type,
+.details-content .eligibility-card p:last-child,
+.details-content .criteria-grid p,
+.details-content .submission-summary {
+  color: var(--muted);
+  font-weight: 400;
+}
+
 /* Application flow */
 .submit-page {
   --application-accent: #31b8c7;
