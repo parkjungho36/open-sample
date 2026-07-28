@@ -32,6 +32,7 @@
   <main id="main-content">
     <section class="page active" id="home" data-page>
       <div class="hero shell">
+        <canvas class="hero-aurora" data-hero-fluid aria-hidden="true"></canvas>
         <div class="hero-symbol" aria-hidden="true">
           <img src="assets/openai-blossom.svg" alt="">
         </div>
@@ -163,7 +164,7 @@
               <div>
                 <h3>Track 1: Open-Mic 개시</h3>
                 <p>Warm-up Challenge를 뚫고 온<br>본선 진출자 대상 엘리베이터 피치 (최대 3분)</p>
-                <p class="schedule-help"><strong>엘리베이터 피치란?</strong> 짧은 시간 동안 자신의 게임에 대해 선보이는 방식</p>
+                <p class="schedule-help">* <strong>엘리베이터 피치란?</strong> 짧은 시간 동안 자신의 게임에 대해 선보이는 방식</p>
               </div>
             </article>
             <article><time datetime="18:00">18:00</time><div><h3>시상식</h3><p>Track 2 현장 투표 마감<br>Track 1 &amp; Track 2 Winner 발표</p></div></article>
@@ -202,8 +203,8 @@
       <section class="how-it-works shell" id="event-how-it-works" aria-labelledby="how-it-works-title">
         <div class="how-it-works-heading">
           <p class="kicker">HOW IT WORKS</p>
-          <h2 id="how-it-works-title">아이디어부터<br>본선 무대까지.</h2>
-          <p>게임을 만들고 제출한 뒤,<br>서울에서 직접 플레이를 선보입니다.</p>
+          <h2 id="how-it-works-title">아이디어부터 본선 무대까지.</h2>
+          <p>게임을 만들고 제출한 뒤, 서울에서 직접 플레이를 선보입니다.</p>
         </div>
         <ol class="how-it-works-flow">
           <li>
@@ -1281,8 +1282,10 @@
   </main>
 
   <footer>
-    <span>OpenAI × Com2uS</span>
-    <span>© 2026 OpenAI Game Hackathon in Seoul</span>
+    <div class="nav-inner footer-inner">
+      <img class="footer-partner-logo" src="assets/openaixcom2us.png" alt="OpenAI × Com2uS">
+      <span>© 2026 OpenAI Game Hackathon in Seoul</span>
+    </div>
   </footer>
 
   <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>

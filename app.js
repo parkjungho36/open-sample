@@ -84,8 +84,195 @@ route();
 
 const typed = document.querySelector("#typed");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const countdown = document.querySelector("[data-countdown]");
 const hero = document.querySelector(".hero");
+
+const fluidHeroCanvas = document.querySelector("[data-hero-fluid]");
+
+if (hero && fluidHeroCanvas) {
+  const gl = fluidHeroCanvas.getContext("webgl", {
+    alpha: false,
+    antialias: false,
+    powerPreference: "high-performance",
+  });
+
+  if (gl) {
+    const vertexSource = `
+      attribute vec2 a_position;
+      void main() {
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+    const fragmentSource = `
+      precision highp float;
+      uniform vec2 u_resolution;
+      uniform float u_time;
+      uniform vec2 u_mouse;
+      uniform float u_hover;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+          mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+          f.y
+        );
+      }
+
+      vec3 getBackground(vec2 uv) {
+        vec2 p = uv * 2.0 - 1.0;
+        p.x *= u_resolution.x / u_resolution.y;
+        float t = u_time * 0.35;
+        vec2 mouseNorm = u_mouse / u_resolution;
+        vec2 mouseP = mouseNorm * 2.0 - 1.0;
+        mouseP.x *= u_resolution.x / u_resolution.y;
+        float mDist = length(p - mouseP);
+        float ripple = sin(mDist * 10.0 - u_time * 3.5)
+          * exp(-mDist * 1.5) * u_hover * 0.35;
+        p += normalize(p - mouseP + 0.001) * ripple;
+
+        vec3 col1 = vec3(0.85, 0.80, 0.95);
+        vec3 col2 = vec3(0.95, 0.82, 0.83);
+        vec3 col3 = vec3(0.83, 0.90, 0.95);
+        float n1 = noise(p * 0.7 + vec2(t, -t * 0.4));
+        float n2 = noise(p * 1.2 - vec2(-t * 0.6, t * 0.3));
+        vec3 color = mix(col1, col2, smoothstep(0.2, 0.8, n1));
+        color = mix(color, col3, smoothstep(0.3, 0.7, n2));
+        float caustics = pow(max(0.0, cos(
+          sin(p.x * 3.0 + t) + sin((p.x - p.y) * 1.5 - t * 0.5)
+        )), 4.0);
+        color += vec3(0.9, 0.95, 1.0) * caustics * 0.08;
+        return color + (hash(uv * 150.0) - 0.5) * 0.01;
+      }
+
+      void main() {
+        vec2 uv = gl_FragCoord.xy / u_resolution;
+        gl_FragColor = vec4(getBackground(uv), 1.0);
+      }
+    `;
+
+    const makeShader = (type, source) => {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    };
+
+    const vertexShader = makeShader(gl.VERTEX_SHADER, vertexSource);
+    const fragmentShader = makeShader(gl.FRAGMENT_SHADER, fragmentSource);
+    const program = vertexShader && fragmentShader ? gl.createProgram() : null;
+
+    if (program) {
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        gl.useProgram(program);
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+          gl.STATIC_DRAW
+        );
+        const position = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(position);
+        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+        const resolution = gl.getUniformLocation(program, "u_resolution");
+        const time = gl.getUniformLocation(program, "u_time");
+        const mouse = gl.getUniformLocation(program, "u_mouse");
+        const hoverUniform = gl.getUniformLocation(program, "u_hover");
+        const pointer = { x: 0, y: 0 };
+        let hover = 0;
+        let hoverTarget = 0;
+        let visible = true;
+        let running = false;
+        let frame = 0;
+        let lastFrame = 0;
+        const startedAt = performance.now();
+
+        const resizeFluidHero = () => {
+          const rect = fluidHeroCanvas.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          const width = Math.max(1, Math.round(rect.width * dpr));
+          const height = Math.max(1, Math.round(rect.height * dpr));
+          if (fluidHeroCanvas.width !== width || fluidHeroCanvas.height !== height) {
+            fluidHeroCanvas.width = width;
+            fluidHeroCanvas.height = height;
+            gl.viewport(0, 0, width, height);
+          }
+          if (!pointer.x && !pointer.y) {
+            pointer.x = width * 0.5;
+            pointer.y = height * 0.5;
+          }
+        };
+
+        const drawFluidHero = (now) => {
+          if (!running) return;
+          if (!reducedMotion && now - lastFrame < 32) {
+            frame = requestAnimationFrame(drawFluidHero);
+            return;
+          }
+          lastFrame = now;
+          resizeFluidHero();
+          hover += (hoverTarget - hover) * 0.075;
+          gl.uniform2f(resolution, fluidHeroCanvas.width, fluidHeroCanvas.height);
+          gl.uniform1f(time, reducedMotion ? 0 : (now - startedAt) / 1000);
+          gl.uniform2f(mouse, pointer.x, pointer.y);
+          gl.uniform1f(hoverUniform, hover);
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+          if (!reducedMotion) frame = requestAnimationFrame(drawFluidHero);
+        };
+
+        const startFluidHero = () => {
+          if (running || !visible || document.hidden) return;
+          running = true;
+          frame = requestAnimationFrame(drawFluidHero);
+        };
+        const stopFluidHero = () => {
+          running = false;
+          cancelAnimationFrame(frame);
+        };
+
+        hero.addEventListener("pointerenter", () => { hoverTarget = 1; });
+        hero.addEventListener("pointerleave", () => { hoverTarget = 0; });
+        hero.addEventListener("pointermove", (event) => {
+          const rect = fluidHeroCanvas.getBoundingClientRect();
+          pointer.x = (event.clientX - rect.left) * (fluidHeroCanvas.width / rect.width);
+          pointer.y = (rect.bottom - event.clientY) * (fluidHeroCanvas.height / rect.height);
+        }, { passive: true });
+
+        const fluidObserver = new IntersectionObserver(([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible) startFluidHero();
+          else stopFluidHero();
+        }, { threshold: 0.01 });
+        fluidObserver.observe(hero);
+
+        const fluidResizeObserver = new ResizeObserver(resizeFluidHero);
+        fluidResizeObserver.observe(hero);
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) stopFluidHero();
+          else startFluidHero();
+        });
+        resizeFluidHero();
+        startFluidHero();
+      }
+    }
+  }
+}
+const countdown = document.querySelector("[data-countdown]");
 const auroraCanvas = document.querySelector("[data-hero-aurora]");
 
 if (hero && auroraCanvas) {
@@ -498,7 +685,16 @@ if (countdown) {
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
-  const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#766fd2", "#ffd400", "#111111", "#173b63"];
+    const palette = [
+      "#ffffff",
+      "#edfaff",
+      "#95dcff",
+      "#48c9ef",
+      "#b9adff",
+      "#9be8d8",
+      "#ffd85b",
+      "#1a3b5d"
+    ];
   let displayValue = "0:00:00:00";
   let pointer = { x: -1000, y: -1000, active: false };
   let displayWidth = 0;
@@ -574,8 +770,11 @@ if (countdown) {
     maskContext.fillText(displayValue, displayWidth / 2, numberCenterY);
 
     const pixels = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
-    const gap = Math.max(5.2, Math.min(8, displayWidth / 132));
-    dots = [];
+    const gap = Math.max(3.8, Math.min(5.4, displayWidth / 188));
+    const previousDots = new Map(
+      dots.map((dot) => [`${Math.round(dot.baseX * 10)}:${Math.round(dot.baseY * 10)}`, dot])
+    );
+    const nextDots = [];
 
     for (let y = gap / 2; y < numberHeight; y += gap) {
       for (let x = gap / 2; x < displayWidth; x += gap) {
@@ -585,11 +784,21 @@ if (countdown) {
         if (alpha > 35) {
           const colorIndex = Math.abs(Math.floor(x / gap) * 17 + Math.floor(y / gap) * 31) % palette.length;
           const sizeSeed = Math.abs(Math.floor(x / gap) * 13 + Math.floor(y / gap) * 19) % 7;
-          const radius = gap * (.18 + sizeSeed * .035);
-          dots.push({ baseX: x, baseY: y, x, y, radius, color: palette[colorIndex] });
+          const radius = gap * (.17 + sizeSeed * .025);
+          const key = `${Math.round(x * 10)}:${Math.round(y * 10)}`;
+          const previousDot = previousDots.get(key);
+          nextDots.push({
+            baseX: x,
+            baseY: y,
+            x: previousDot?.x ?? x,
+            y: previousDot?.y ?? y,
+            radius,
+            color: palette[colorIndex]
+          });
         }
       }
     }
+    dots = nextDots;
 
     const groups = displayValue.split(":").map((group) => group.trim());
     const separatorWidth = maskContext.measureText(" : ").width;
