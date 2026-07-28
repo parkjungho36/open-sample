@@ -36,6 +36,9 @@ function route() {
   }
 
   window.scrollTo({ top: 0, behavior: "auto" });
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  });
   syncHeaderTheme();
 }
 
@@ -205,6 +208,254 @@ if (hero && auroraCanvas) {
   startAurora();
 }
 
+const liquidCanvas = document.querySelector("[data-hero-liquid]");
+
+if (hero && liquidCanvas) {
+  const gl = liquidCanvas.getContext("webgl", {
+    alpha: false,
+    antialias: false,
+    depth: false,
+    powerPreference: "low-power"
+  });
+
+  if (gl) {
+    const vertexSource = `
+      attribute vec2 a_position;
+      void main() {
+        gl_Position = vec4(a_position, 0.0, 1.0);
+      }
+    `;
+    const fragmentSource = `
+      precision mediump float;
+      uniform vec2 u_resolution;
+      uniform float u_time;
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        return mix(
+          mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+          mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+          f.y
+        );
+      }
+
+      float caustics(vec2 p, float time) {
+        float value = 0.0;
+        float scale = 1.0;
+        for (int i = 0; i < 3; i++) {
+          p += vec2(
+            sin(p.y * 1.35 + time * 1.08),
+            cos(p.x * 1.2 - time * 0.92)
+          ) * 0.23;
+          value += abs(sin(p.x * 2.1 + p.y * 1.7 + time)) / scale;
+          p *= 1.72;
+          scale *= 1.85;
+        }
+        return smoothstep(0.35, 1.25, value);
+      }
+
+      void main() {
+        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+        vec2 p = uv * 2.0 - 1.0;
+        p.x *= u_resolution.x / max(u_resolution.y, 1.0);
+
+        float t = u_time * 0.15;
+        float n1 = noise(p * 0.8 + vec2(t, -t * 0.5));
+        float n2 = noise(p * 1.5 + vec2(t * 0.8, -t));
+        float n3 = noise(p * 0.52 - vec2(t * 0.38, t * 0.3));
+
+        vec3 violet = vec3(0.92, 0.90, 0.98);
+        vec3 seashell = vec3(0.98, 0.92, 0.91);
+        vec3 ice = vec3(0.91, 0.95, 0.98);
+        vec3 color = mix(violet, seashell, smoothstep(0.22, 0.82, n1));
+        color = mix(color, ice, smoothstep(0.28, 0.8, n2) * 0.72);
+        color = mix(color, vec3(0.94, 0.98, 0.96), n3 * 0.18);
+
+        float light = caustics(p * 0.82, u_time * 0.125);
+        color += vec3(0.02, 0.052, 0.06) * light;
+        color += vec3(0.045, 0.018, 0.055) * (1.0 - light) * n1;
+
+        float vignette = smoothstep(1.35, 0.18, length(p * vec2(0.72, 0.9)));
+        color = mix(color * 0.985, color, vignette);
+        float grain = hash(gl_FragCoord.xy * 0.37);
+        color += (grain - 0.5) * 0.012;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    function compileShader(type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    }
+
+    const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
+    const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+    const program = vertexShader && fragmentShader ? gl.createProgram() : null;
+
+    if (program) {
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+    }
+
+    if (program && gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+        gl.STATIC_DRAW
+      );
+      const positionLocation = gl.getAttribLocation(program, "a_position");
+      const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+      const timeLocation = gl.getUniformLocation(program, "u_time");
+      let liquidFrame = 0;
+      let liquidLastFrame = 0;
+      let liquidVisible = true;
+      const liquidStart = performance.now();
+
+      function resizeLiquid() {
+        const rect = hero.getBoundingClientRect();
+        const scale = Math.min(window.devicePixelRatio || 1, 1);
+        liquidCanvas.width = Math.max(1, Math.round(rect.width * scale));
+        liquidCanvas.height = Math.max(1, Math.round(rect.height * scale));
+        gl.viewport(0, 0, liquidCanvas.width, liquidCanvas.height);
+      }
+
+      function drawLiquid(now) {
+        liquidFrame = 0;
+        if (!liquidVisible || document.hidden) return;
+        if (!reducedMotion && now - liquidLastFrame < 32) {
+          liquidFrame = requestAnimationFrame(drawLiquid);
+          return;
+        }
+        liquidLastFrame = now;
+        gl.useProgram(program);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+        gl.uniform2f(resolutionLocation, liquidCanvas.width, liquidCanvas.height);
+        gl.uniform1f(timeLocation, reducedMotion ? 0 : (now - liquidStart) * 0.001);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        if (!reducedMotion) liquidFrame = requestAnimationFrame(drawLiquid);
+      }
+
+      function startLiquid() {
+        if (!liquidFrame && liquidVisible && !document.hidden) {
+          liquidFrame = requestAnimationFrame(drawLiquid);
+        }
+      }
+
+      new ResizeObserver(resizeLiquid).observe(hero);
+      new IntersectionObserver(([entry]) => {
+        liquidVisible = entry.isIntersecting;
+        if (liquidVisible) startLiquid();
+      }, { threshold: 0.01 }).observe(hero);
+      document.addEventListener("visibilitychange", startLiquid);
+      resizeLiquid();
+      startLiquid();
+    }
+  }
+}
+
+const gallerySearch = document.querySelector("[data-gallery-search]");
+const galleryCards = [...document.querySelectorAll("[data-gallery-list] .game-card")];
+const galleryEmpty = document.querySelector("[data-gallery-empty]");
+const galleryPagination = document.querySelector("[data-gallery-pagination]");
+const galleryPageNumbers = document.querySelector("[data-page-numbers]");
+const galleryPrev = document.querySelector("[data-page-prev]");
+const galleryNext = document.querySelector("[data-page-next]");
+const galleryPageSize = 12;
+let galleryPage = 1;
+
+document.querySelectorAll(".game-stats span:last-child").forEach((stat) => {
+  if (stat.querySelector(".view-eye")) return;
+  const firstNode = stat.firstChild;
+  if (firstNode?.nodeType === Node.TEXT_NODE) firstNode.remove();
+  const eye = document.createElement("i");
+  eye.className = "view-eye";
+  eye.setAttribute("aria-hidden", "true");
+  stat.prepend(eye);
+});
+
+function renderGallery() {
+  if (!galleryCards.length) return;
+  const query = gallerySearch?.value.trim().toLocaleLowerCase() || "";
+  const matches = galleryCards.filter((card) => !query || card.dataset.search.toLocaleLowerCase().includes(query));
+  const totalPages = Math.max(1, Math.ceil(matches.length / galleryPageSize));
+  galleryPage = Math.min(galleryPage, totalPages);
+  const start = (galleryPage - 1) * galleryPageSize;
+
+  galleryCards.forEach((card) => {
+    const matchIndex = matches.indexOf(card);
+    card.hidden = matchIndex < start || matchIndex >= start + galleryPageSize;
+  });
+  if (galleryEmpty) galleryEmpty.hidden = matches.length > 0;
+  if (galleryPagination) galleryPagination.hidden = matches.length === 0;
+  if (galleryPrev) galleryPrev.disabled = galleryPage === 1;
+  if (galleryNext) galleryNext.disabled = galleryPage === totalPages;
+
+  if (galleryPageNumbers) {
+    galleryPageNumbers.replaceChildren();
+    for (let page = 1; page <= totalPages; page += 1) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = String(page);
+      button.setAttribute("aria-label", `${page}페이지`);
+      if (page === galleryPage) button.setAttribute("aria-current", "page");
+      button.addEventListener("click", () => {
+        galleryPage = page;
+        renderGallery();
+      });
+      galleryPageNumbers.append(button);
+    }
+  }
+}
+
+if (gallerySearch && galleryCards.length) {
+  gallerySearch.addEventListener("input", () => {
+    galleryPage = 1;
+    renderGallery();
+  });
+  galleryPrev?.addEventListener("click", () => {
+    galleryPage = Math.max(1, galleryPage - 1);
+    renderGallery();
+  });
+  galleryNext?.addEventListener("click", () => {
+    galleryPage += 1;
+    renderGallery();
+  });
+  renderGallery();
+}
+
+document.querySelectorAll(".game-like").forEach((button) => {
+  button.addEventListener("click", () => {
+    const card = button.closest(".game-card");
+    const nextPressed = button.getAttribute("aria-pressed") !== "true";
+    const buttonCount = button.querySelector("b");
+    const currentCount = Number(buttonCount?.textContent || 0);
+    const nextCount = Math.max(0, currentCount + (nextPressed ? 1 : -1));
+    button.setAttribute("aria-pressed", String(nextPressed));
+    const icon = button.querySelector("img");
+    if (icon) icon.src = nextPressed ? "assets/favorite.svg" : "assets/favorite-1.svg";
+    [buttonCount, card?.querySelector("[data-heart-count]")].forEach((target) => {
+      if (target) target.textContent = String(nextCount);
+    });
+  });
+});
+
 if (countdown) {
   const targetTime = new Date(countdown.dataset.target).getTime();
   const canvas = countdown.querySelector("[data-dot-countdown]");
@@ -212,7 +463,7 @@ if (countdown) {
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
-  const palette = ["#38a9f3", "#16d5e8", "#9ae4fa", "#d3ccff", "#ffe26a", "#ffffff", "#9ec7f1"];
+  const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#766fd2", "#ffd400", "#111111", "#173b63"];
   let displayValue = "0:00:00:00";
   let pointer = { x: -1000, y: -1000, active: false };
   let displayWidth = 0;
@@ -353,7 +604,7 @@ if (countdown) {
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.font = `700 ${Math.max(12, Math.min(17, displayWidth / 65))}px "Open Sans", sans-serif`;
-    context.fillStyle = "rgba(255, 255, 255, .9)";
+    context.fillStyle = "#111";
     labels.forEach((label, index) => {
       context.fillText(label, labelCenters[index], labelY);
     });
@@ -389,6 +640,114 @@ if (countdown) {
   const countdownInterval = window.setInterval(() => {
     if (updateCountdown() === 0) window.clearInterval(countdownInterval);
   }, 1000);
+}
+
+const guestGallery = document.querySelector(".guest-gallery");
+
+if (guestGallery) {
+  const guestCards = [...guestGallery.querySelectorAll("[data-guest-index]")];
+  const cardSpacing = 245;
+  const totalStripWidth = guestCards.length * cardSpacing;
+  let carouselScroll = 0;
+  let targetCarouselScroll = 0;
+  let carouselVelocity = 0;
+  let dragStart = 0;
+  let lastDragX = 0;
+  let draggingGuests = false;
+  let galleryVisible = false;
+  let lastCarouselFrame = 0;
+  let resumeCarouselAt = 0;
+  const carouselSpeed = reducedMotion ? 0 : .5;
+
+  function renderGuestGallery() {
+    const viewportWidth = guestGallery.clientWidth;
+    const curveWidth = Math.max(720, viewportWidth / 1.5);
+    guestCards.forEach((card, index) => {
+      let x = index * cardSpacing - carouselScroll;
+      while (x < -totalStripWidth / 2) x += totalStripWidth;
+      while (x > totalStripWidth / 2) x -= totalStripWidth;
+
+      const progress = x / curveWidth;
+      const distance = Math.abs(progress);
+      const z = -Math.pow(distance, 2) * 500;
+      const rotate = progress * 45;
+      const opacity = Math.max(0, 1 - Math.pow(distance, 3));
+
+      card.style.transform = `translate3d(calc(-50% + ${x}px), 0, ${z}px) rotateY(${rotate}deg)`;
+      card.style.opacity = String(opacity);
+      card.style.filter = `saturate(${.72 + opacity * .28}) brightness(${.86 + opacity * .14})`;
+      card.style.zIndex = String(Math.round((1 - distance) * 100));
+      card.style.visibility = distance < 1.08 ? "visible" : "hidden";
+      card.setAttribute("aria-hidden", opacity < .04 ? "true" : "false");
+    });
+  }
+
+  function animateGuestGallery(time) {
+    if (!lastCarouselFrame) lastCarouselFrame = time;
+    const elapsed = Math.min(64, time - lastCarouselFrame);
+    if (elapsed >= 32) {
+      lastCarouselFrame = time;
+      if (galleryVisible && !draggingGuests) {
+        if (time >= resumeCarouselAt && carouselSpeed) targetCarouselScroll += carouselSpeed * (elapsed / 16.67);
+        targetCarouselScroll += carouselVelocity;
+        carouselVelocity *= .94;
+        carouselScroll += (targetCarouselScroll - carouselScroll) * .12;
+        if (Math.abs(carouselScroll) > totalStripWidth * 20) {
+          carouselScroll %= totalStripWidth;
+          targetCarouselScroll %= totalStripWidth;
+        }
+        renderGuestGallery();
+      }
+    }
+    window.requestAnimationFrame(animateGuestGallery);
+  }
+
+  guestGallery.tabIndex = 0;
+  guestGallery.addEventListener("pointerdown", (event) => {
+    draggingGuests = true;
+    dragStart = event.clientX;
+    lastDragX = event.clientX;
+    carouselVelocity = 0;
+    guestGallery.classList.add("is-dragging");
+    guestGallery.setPointerCapture?.(event.pointerId);
+  });
+  guestGallery.addEventListener("pointermove", (event) => {
+    if (!draggingGuests) return;
+    const delta = event.clientX - lastDragX;
+    lastDragX = event.clientX;
+    targetCarouselScroll -= delta * 1.25;
+    carouselScroll = targetCarouselScroll;
+    carouselVelocity = -delta * .25;
+    renderGuestGallery();
+  });
+  guestGallery.addEventListener("pointerup", (event) => {
+    if (!draggingGuests) return;
+    draggingGuests = false;
+    guestGallery.classList.remove("is-dragging");
+    resumeCarouselAt = performance.now() + 1000;
+    guestGallery.releasePointerCapture?.(event.pointerId);
+  });
+  guestGallery.addEventListener("pointercancel", () => {
+    draggingGuests = false;
+    guestGallery.classList.remove("is-dragging");
+    resumeCarouselAt = performance.now() + 1000;
+  });
+  guestGallery.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") targetCarouselScroll -= cardSpacing;
+    if (event.key === "ArrowRight") targetCarouselScroll += cardSpacing;
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      resumeCarouselAt = performance.now() + 1000;
+      carouselScroll = targetCarouselScroll;
+      renderGuestGallery();
+    }
+  });
+  new IntersectionObserver(([entry]) => {
+    galleryVisible = entry.isIntersecting;
+    lastCarouselFrame = performance.now();
+  }, { rootMargin: "100px" }).observe(guestGallery);
+  new ResizeObserver(renderGuestGallery).observe(guestGallery);
+  renderGuestGallery();
+  window.requestAnimationFrame(animateGuestGallery);
 }
 
 const lines = [
@@ -440,6 +799,22 @@ document.querySelectorAll("[data-scroll-target]").forEach((button) => {
     document.getElementById(button.dataset.scrollTarget)?.scrollIntoView({
       behavior: reducedMotion ? "auto" : "smooth",
       block: "start"
+    });
+  });
+});
+
+document.querySelectorAll("[data-details-anchor]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const target = document.getElementById(link.dataset.detailsAnchor);
+    if (!target) return;
+
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start"
+      });
     });
   });
 });
