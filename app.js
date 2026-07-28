@@ -779,6 +779,240 @@ if (typed && !reducedMotion) {
   type();
 }
 
+const submitPage = document.querySelector("#submit");
+
+if (submitPage) {
+  const loginView = submitPage.querySelector("[data-submit-login]");
+  const applicationView = submitPage.querySelector("[data-submit-application]");
+  const googleSlot = submitPage.querySelector("[data-google-signin-slot]");
+  const googleFallback = submitPage.querySelector("[data-google-signin-fallback]");
+  const authStatus = submitPage.querySelector("[data-auth-status]");
+  const accountEmail = submitPage.querySelector("[data-account-email]");
+  const accountAvatar = submitPage.querySelector("[data-account-avatar]");
+  const applicantEmail = submitPage.querySelector("[data-applicant-email]");
+  const switchAccount = submitPage.querySelector("[data-switch-account]");
+  const applicationForm = submitPage.querySelector("[data-application-form]");
+  const termsDialog = submitPage.querySelector("[data-terms-dialog]");
+  const termsTitle = submitPage.querySelector("[data-terms-title]");
+  const termsScroll = submitPage.querySelector("[data-terms-scroll]");
+  const termsProgress = submitPage.querySelector("[data-terms-progress]");
+  const termsAccept = submitPage.querySelector("[data-terms-accept]");
+  const termsClose = submitPage.querySelector("[data-terms-close]");
+  const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
+  const consentState = { event: false, privacy: false };
+  const consentDocuments = {
+    event: {
+      title: "OpenAI Game Hackathon in Seoul 참가 약관",
+      template: document.querySelector("#event-terms-content")
+    },
+    privacy: {
+      title: "개인정보 수집·이용 동의서",
+      template: document.querySelector("#privacy-terms-content")
+    }
+  };
+  let activeConsent = null;
+  let googleInitialized = false;
+
+  function readStoredAccount() {
+    try {
+      return JSON.parse(window.sessionStorage.getItem("hackathon-google-account"));
+    } catch {
+      return null;
+    }
+  }
+
+  function storeAccount(account) {
+    try {
+      if (account) window.sessionStorage.setItem("hackathon-google-account", JSON.stringify(account));
+      else window.sessionStorage.removeItem("hackathon-google-account");
+    } catch {
+      // Session storage can be unavailable in privacy-focused browser modes.
+    }
+  }
+
+  function decodeGoogleCredential(credential) {
+    try {
+      const encodedPayload = credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const bytes = Uint8Array.from(window.atob(encodedPayload), (character) => character.charCodeAt(0));
+      const payload = JSON.parse(new TextDecoder().decode(bytes));
+      return {
+        email: payload.email,
+        name: payload.name || payload.given_name || payload.email,
+        picture: payload.picture || ""
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function renderAccount(account) {
+    const isAuthenticated = Boolean(account?.email);
+    loginView.hidden = isAuthenticated;
+    applicationView.hidden = !isAuthenticated;
+
+    if (!isAuthenticated) return;
+
+    accountEmail.textContent = account.email;
+    applicantEmail.value = account.email;
+    accountAvatar.replaceChildren();
+
+    if (account.picture) {
+      const image = document.createElement("img");
+      image.src = account.picture;
+      image.alt = "";
+      image.referrerPolicy = "no-referrer";
+      accountAvatar.append(image);
+    } else {
+      accountAvatar.textContent = (account.name || account.email).trim().charAt(0).toUpperCase();
+    }
+  }
+
+  function setAccount(account) {
+    storeAccount(account);
+    renderAccount(account);
+    if (account) window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  function initializeGoogleSignIn() {
+    if (googleInitialized || !googleClientId || !window.google?.accounts?.id) return;
+    googleInitialized = true;
+    googleFallback.hidden = true;
+    googleSlot.replaceChildren();
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: ({ credential }) => {
+        const account = decodeGoogleCredential(credential);
+        if (!account?.email) {
+          authStatus.textContent = "Google 계정 정보를 확인하지 못했습니다. 다시 시도해주세요.";
+          return;
+        }
+        authStatus.textContent = "";
+        setAccount(account);
+      }
+    });
+    window.google.accounts.id.renderButton(googleSlot, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      shape: "rectangular",
+      text: "signin_with",
+      width: 320,
+      locale: "ko"
+    });
+  }
+
+  function updateConsentRow(key, agreed) {
+    consentState[key] = agreed;
+    const trigger = submitPage.querySelector(`[data-consent-trigger="${key}"]`);
+    trigger?.setAttribute("aria-pressed", String(agreed));
+  }
+
+  function updateTermsProgress() {
+    const hasReachedEnd = termsScroll.scrollHeight - termsScroll.scrollTop - termsScroll.clientHeight <= 4;
+    termsAccept.disabled = !hasReachedEnd;
+    termsProgress.textContent = hasReachedEnd
+      ? "약관을 모두 확인했습니다."
+      : "내용을 끝까지 읽으면 동의할 수 있습니다.";
+  }
+
+  function openTerms(key) {
+    const documentConfig = consentDocuments[key];
+    if (!documentConfig?.template) return;
+    activeConsent = key;
+    termsTitle.textContent = documentConfig.title;
+    termsScroll.replaceChildren(documentConfig.template.content.cloneNode(true));
+    termsAccept.disabled = true;
+    termsProgress.textContent = "내용을 끝까지 읽으면 동의할 수 있습니다.";
+    termsDialog.showModal();
+    document.body.classList.add("terms-modal-open");
+    window.requestAnimationFrame(() => {
+      termsScroll.scrollTop = 0;
+      termsScroll.focus();
+      updateTermsProgress();
+    });
+  }
+
+  function closeTerms() {
+    if (termsDialog.open) termsDialog.close();
+  }
+
+  submitPage.querySelectorAll("[data-consent-trigger]").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const key = trigger.dataset.consentTrigger;
+      if (consentState[key]) {
+        updateConsentRow(key, false);
+        return;
+      }
+      openTerms(key);
+    });
+  });
+
+  termsScroll.addEventListener("scroll", updateTermsProgress, { passive: true });
+  termsClose.addEventListener("click", closeTerms);
+  termsAccept.addEventListener("click", () => {
+    if (termsAccept.disabled || !activeConsent) return;
+    updateConsentRow(activeConsent, true);
+    closeTerms();
+  });
+  termsDialog.addEventListener("close", () => {
+    activeConsent = null;
+    document.body.classList.remove("terms-modal-open");
+  });
+  termsDialog.addEventListener("click", (event) => {
+    if (event.target === termsDialog) closeTerms();
+  });
+
+  googleFallback.addEventListener("click", () => {
+    if (googleClientId) {
+      authStatus.textContent = "Google 로그인 서비스를 불러오는 중입니다. 잠시 후 다시 시도해주세요.";
+      return;
+    }
+
+    authStatus.textContent = "";
+    setAccount({
+      email: "participant.demo@gmail.com",
+      name: "Demo Participant",
+      picture: ""
+    });
+  });
+
+  switchAccount.addEventListener("click", () => {
+    applicationForm.reset();
+    updateConsentRow("event", false);
+    updateConsentRow("privacy", false);
+    window.google?.accounts?.id?.disableAutoSelect();
+    setAccount(null);
+  });
+
+  applicationForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const status = applicationForm.querySelector(".form-status");
+
+    if (!consentState.event || !consentState.privacy) {
+      status.textContent = "참가 약관과 개인정보 수집·이용 동의서를 확인해주세요.";
+      submitPage.querySelector(".consent-section")?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start"
+      });
+      return;
+    }
+
+    if (!applicationForm.checkValidity()) {
+      applicationForm.reportValidity();
+      status.textContent = "필수 항목과 입력 형식을 확인해주세요.";
+      return;
+    }
+
+    status.textContent = "신청서 입력 내용이 확인되었습니다. 실제 접수 저장 시스템은 추후 연결됩니다.";
+  });
+
+  const googleScript = document.querySelector("#google-identity-services");
+  if (window.google?.accounts?.id) initializeGoogleSignIn();
+  else googleScript?.addEventListener("load", initializeGoogleSignIn, { once: true });
+
+  renderAccount(readStoredAccount());
+}
+
 document.querySelectorAll("[data-demo-form]").forEach((form) => {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
