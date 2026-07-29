@@ -118,8 +118,11 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const hero = document.querySelector(".hero");
 
 const fluidHeroCanvas = document.querySelector("[data-hero-fluid]");
+const heroSymbol = document.querySelector(".hero-symbol");
+const symbolFluidCanvas = document.querySelector("[data-hero-symbol-fluid]");
 
 if (hero && fluidHeroCanvas) {
+  const symbolFluidContext = symbolFluidCanvas?.getContext("2d");
   const gl = fluidHeroCanvas.getContext("webgl", {
     alpha: false,
     antialias: false,
@@ -249,6 +252,59 @@ if (hero && fluidHeroCanvas) {
           }
         };
 
+        const drawSymbolFluid = () => {
+          if (
+            activeMainVariant !== "main-3"
+            || !heroSymbol
+            || !symbolFluidCanvas
+            || !symbolFluidContext
+          ) return;
+
+          const heroRect = fluidHeroCanvas.getBoundingClientRect();
+          const symbolRect = heroSymbol.getBoundingClientRect();
+          if (!heroRect.width || !heroRect.height || !symbolRect.width || !symbolRect.height) return;
+
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          const outputWidth = Math.max(1, Math.round(symbolRect.width * dpr));
+          const outputHeight = Math.max(1, Math.round(symbolRect.height * dpr));
+          if (symbolFluidCanvas.width !== outputWidth || symbolFluidCanvas.height !== outputHeight) {
+            symbolFluidCanvas.width = outputWidth;
+            symbolFluidCanvas.height = outputHeight;
+          }
+
+          const scaleX = fluidHeroCanvas.width / heroRect.width;
+          const scaleY = fluidHeroCanvas.height / heroRect.height;
+          const rawSourceX = (symbolRect.left - heroRect.left) * scaleX;
+          const rawSourceY = (symbolRect.top - heroRect.top) * scaleY;
+          const rawSourceWidth = symbolRect.width * scaleX;
+          const rawSourceHeight = symbolRect.height * scaleY;
+          const sourceX = Math.max(0, rawSourceX);
+          const sourceY = Math.max(0, rawSourceY);
+          const sourceRight = Math.min(fluidHeroCanvas.width, rawSourceX + rawSourceWidth);
+          const sourceBottom = Math.min(fluidHeroCanvas.height, rawSourceY + rawSourceHeight);
+          const sourceWidth = sourceRight - sourceX;
+          const sourceHeight = sourceBottom - sourceY;
+
+          symbolFluidContext.clearRect(0, 0, outputWidth, outputHeight);
+          if (sourceWidth <= 0 || sourceHeight <= 0) return;
+
+          const destinationX = ((sourceX - rawSourceX) / rawSourceWidth) * outputWidth;
+          const destinationY = ((sourceY - rawSourceY) / rawSourceHeight) * outputHeight;
+          const destinationWidth = (sourceWidth / rawSourceWidth) * outputWidth;
+          const destinationHeight = (sourceHeight / rawSourceHeight) * outputHeight;
+          symbolFluidContext.drawImage(
+            fluidHeroCanvas,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            destinationX,
+            destinationY,
+            destinationWidth,
+            destinationHeight
+          );
+        };
+
         const drawFluidHero = (now) => {
           if (!running) return;
           if (!reducedMotion && now - lastFrame < 32) {
@@ -263,6 +319,7 @@ if (hero && fluidHeroCanvas) {
           gl.uniform2f(mouse, pointer.x, pointer.y);
           gl.uniform1f(hoverUniform, hover);
           gl.drawArrays(gl.TRIANGLES, 0, 6);
+          drawSymbolFluid();
           if (!reducedMotion) frame = requestAnimationFrame(drawFluidHero);
         };
 
@@ -276,12 +333,27 @@ if (hero && fluidHeroCanvas) {
           cancelAnimationFrame(frame);
         };
 
-        hero.addEventListener("pointerenter", () => { hoverTarget = 1; });
+        const updateFluidHover = (event) => {
+          if (activeMainVariant !== "main-3" || !heroSymbol) {
+            hoverTarget = 1;
+            return;
+          }
+          const symbolRect = heroSymbol.getBoundingClientRect();
+          hoverTarget = (
+            event.clientX >= symbolRect.left
+            && event.clientX <= symbolRect.right
+            && event.clientY >= symbolRect.top
+            && event.clientY <= symbolRect.bottom
+          ) ? 1 : 0;
+        };
+
+        hero.addEventListener("pointerenter", updateFluidHover);
         hero.addEventListener("pointerleave", () => { hoverTarget = 0; });
         hero.addEventListener("pointermove", (event) => {
           const rect = fluidHeroCanvas.getBoundingClientRect();
           pointer.x = (event.clientX - rect.left) * (fluidHeroCanvas.width / rect.width);
           pointer.y = (rect.bottom - event.clientY) * (fluidHeroCanvas.height / rect.height);
+          updateFluidHover(event);
         }, { passive: true });
 
         const fluidObserver = new IntersectionObserver(([entry]) => {
@@ -812,6 +884,9 @@ if (countdown) {
     numberCenterY = glassTop + glassHeight / 2;
     const numberHeight = glassBottom;
     countdownFontSize = Math.max(44, glassHeight * .78);
+    const groups = displayValue.split(":").map((group) => group.trim());
+    const separatorText = activeMainVariant === "main-1" ? "   " : " : ";
+    const maskDisplayValue = groups.join(separatorText);
 
     maskCanvas.width = Math.max(1, Math.ceil(displayWidth));
     maskCanvas.height = Math.max(1, Math.ceil(displayHeight));
@@ -820,13 +895,13 @@ if (countdown) {
     maskContext.textBaseline = "middle";
     maskContext.font = `700 ${countdownFontSize}px "Open Sans", Arial, sans-serif`;
 
-    while (maskContext.measureText(displayValue).width > displayWidth - 28 && countdownFontSize > 28) {
+    while (maskContext.measureText(maskDisplayValue).width > displayWidth - 28 && countdownFontSize > 28) {
       countdownFontSize -= 2;
       maskContext.font = `700 ${countdownFontSize}px "Open Sans", Arial, sans-serif`;
     }
 
     maskContext.fillStyle = "#000";
-    maskContext.fillText(displayValue, displayWidth / 2, numberCenterY);
+    maskContext.fillText(maskDisplayValue, displayWidth / 2, numberCenterY);
 
     const pixels = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
     const gap = Math.max(5.5, Math.min(8.2, displayWidth / 135));
@@ -862,8 +937,7 @@ if (countdown) {
     }
     dots = nextDots;
 
-    const groups = displayValue.split(":").map((group) => group.trim());
-    const separatorWidth = maskContext.measureText(" : ").width;
+    const separatorWidth = maskContext.measureText(separatorText).width;
     const groupWidths = groups.map((group) => maskContext.measureText(group).width);
     const totalWidth = groupWidths.reduce((sum, width) => sum + width, 0) + separatorWidth * 3;
     let groupCursor = (displayWidth - totalWidth) / 2;
@@ -947,8 +1021,16 @@ if (countdown) {
         const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
         const radius = Math.max(1.2, dot.radius * (1 + pulse));
 
-        if (activeMainVariant === "main-1") {
+        if (activeMainVariant === "main-1" || activeMainVariant === "main-3") {
           const beadRadius = radius * 1.18;
+          let beadColor = dot.color;
+          if (activeMainVariant === "main-1") {
+            if (dot.color === "#111111") beadColor = "#f2a7ca";
+            if (dot.color === "#173b63") beadColor = "#f19a84";
+          } else if (activeMainVariant === "main-3") {
+            if (dot.color === "#111111") beadColor = "#aaa4dc";
+            if (dot.color === "#173b63") beadColor = "#7fabc8";
+          }
           context.beginPath();
           context.arc(
             dot.x + beadRadius * .22,
@@ -962,7 +1044,7 @@ if (countdown) {
 
           context.beginPath();
           context.arc(dot.x, dot.y, beadRadius, 0, Math.PI * 2);
-          context.fillStyle = dot.color;
+          context.fillStyle = beadColor;
           context.fill();
           context.lineWidth = Math.max(.35, beadRadius * .12);
           context.strokeStyle = "rgba(255, 255, 255, .52)";
