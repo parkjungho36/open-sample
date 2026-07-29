@@ -1,8 +1,12 @@
 const pages = [...document.querySelectorAll("[data-page]")];
 const routeLinks = [...document.querySelectorAll("[data-route]")];
 const validRoutes = new Set(pages.map((page) => page.id));
+const mainVariantRoutes = new Set(["main-1", "main-2", "main-3"]);
 const siteHeader = document.querySelector(".nav");
+const brandMark = document.querySelector(".brand-mark");
+const homePage = document.querySelector("#home");
 let activeRouteId = pages.find((page) => page.classList.contains("active"))?.id || "home";
+let activeMainVariant = document.body.dataset.mainVariant || "main-1";
 let routeLeaveGuard = null;
 
 window.lucide?.createIcons();
@@ -25,7 +29,6 @@ footerLanguageSelect?.addEventListener("change", () => {
 
 function syncHeaderTheme() {
   const heroSection = document.querySelector(".hero");
-  const homePage = document.querySelector("#home");
   if (!siteHeader || !heroSection || !homePage) return;
   const heroAtTop = homePage.classList.contains("active") && window.scrollY <= 8;
   siteHeader.classList.toggle("is-hero", heroAtTop);
@@ -33,10 +36,20 @@ function syncHeaderTheme() {
 }
 
 function route() {
-  const requestedHash = location.hash.slice(1) || "home";
+  const requestedHash = location.hash.slice(1) || "main-1";
   const [requestedRoute, requestedDetailsTarget] = requestedHash.split(":");
-  const normalizedRoute = requestedRoute === "info" ? "home" : requestedRoute;
+  const requestedMainVariant = mainVariantRoutes.has(requestedRoute) ? requestedRoute : null;
+  const normalizedRoute = (requestedMainVariant || requestedRoute === "info")
+    ? "home"
+    : requestedRoute;
   const routeId = validRoutes.has(normalizedRoute) ? normalizedRoute : "home";
+
+  if (requestedMainVariant) activeMainVariant = requestedMainVariant;
+  else if (routeId === "home") activeMainVariant = "main-1";
+
+  document.body.dataset.mainVariant = activeMainVariant;
+  if (homePage) homePage.dataset.mainVariant = activeMainVariant;
+  if (brandMark) brandMark.href = `#${activeMainVariant}`;
 
   if (
     routeId !== activeRouteId
@@ -53,12 +66,14 @@ function route() {
   });
 
   routeLinks.forEach((link) => {
-    const isActive = link.dataset.route === routeId;
+    const isActive = link.dataset.route === (routeId === "home" ? activeMainVariant : routeId);
     if (isActive) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
 
-  if (requestedRoute !== routeId && requestedRoute !== "info") {
+  if (!location.hash) {
+    history.replaceState(null, "", `#${activeMainVariant}`);
+  } else if (requestedRoute !== routeId && requestedRoute !== "info" && !requestedMainVariant) {
     history.replaceState(null, "", `#${routeId}`);
   }
 
@@ -103,8 +118,13 @@ const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const hero = document.querySelector(".hero");
 
 const fluidHeroCanvas = document.querySelector("[data-hero-fluid]");
+const heroSymbol = document.querySelector(".hero-symbol");
+const symbolFluidCanvas = document.querySelector("[data-hero-symbol-fluid]");
+const symbolHighlightCanvas = document.querySelector("[data-hero-symbol-highlight]");
 
 if (hero && fluidHeroCanvas) {
+  const symbolFluidContext = symbolFluidCanvas?.getContext("2d");
+  const symbolHighlightContext = symbolHighlightCanvas?.getContext("2d");
   const gl = fluidHeroCanvas.getContext("webgl", {
     alpha: false,
     antialias: false,
@@ -216,6 +236,7 @@ if (hero && fluidHeroCanvas) {
         let running = false;
         let frame = 0;
         let lastFrame = 0;
+        const symbolHover = { active: false, x: .5, y: .5 };
         const startedAt = performance.now();
 
         const resizeFluidHero = () => {
@@ -234,6 +255,100 @@ if (hero && fluidHeroCanvas) {
           }
         };
 
+        const drawSymbolFluid = () => {
+          if (
+            activeMainVariant !== "main-3"
+            || !heroSymbol
+            || !symbolFluidCanvas
+            || !symbolFluidContext
+          ) return;
+
+          const heroRect = fluidHeroCanvas.getBoundingClientRect();
+          const symbolRect = heroSymbol.getBoundingClientRect();
+          if (!heroRect.width || !heroRect.height || !symbolRect.width || !symbolRect.height) return;
+
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          const outputWidth = Math.max(1, Math.round(symbolRect.width * dpr));
+          const outputHeight = Math.max(1, Math.round(symbolRect.height * dpr));
+          if (symbolFluidCanvas.width !== outputWidth || symbolFluidCanvas.height !== outputHeight) {
+            symbolFluidCanvas.width = outputWidth;
+            symbolFluidCanvas.height = outputHeight;
+          }
+          if (
+            symbolHighlightCanvas
+            && (
+              symbolHighlightCanvas.width !== outputWidth
+              || symbolHighlightCanvas.height !== outputHeight
+            )
+          ) {
+            symbolHighlightCanvas.width = outputWidth;
+            symbolHighlightCanvas.height = outputHeight;
+          }
+
+          const scaleX = fluidHeroCanvas.width / heroRect.width;
+          const scaleY = fluidHeroCanvas.height / heroRect.height;
+          const rawSourceX = (symbolRect.left - heroRect.left) * scaleX;
+          const rawSourceY = (symbolRect.top - heroRect.top) * scaleY;
+          const rawSourceWidth = symbolRect.width * scaleX;
+          const rawSourceHeight = symbolRect.height * scaleY;
+          const sourceX = Math.max(0, rawSourceX);
+          const sourceY = Math.max(0, rawSourceY);
+          const sourceRight = Math.min(fluidHeroCanvas.width, rawSourceX + rawSourceWidth);
+          const sourceBottom = Math.min(fluidHeroCanvas.height, rawSourceY + rawSourceHeight);
+          const sourceWidth = sourceRight - sourceX;
+          const sourceHeight = sourceBottom - sourceY;
+
+          symbolFluidContext.clearRect(0, 0, outputWidth, outputHeight);
+          if (sourceWidth <= 0 || sourceHeight <= 0) return;
+
+          const destinationX = ((sourceX - rawSourceX) / rawSourceWidth) * outputWidth;
+          const destinationY = ((sourceY - rawSourceY) / rawSourceHeight) * outputHeight;
+          const destinationWidth = (sourceWidth / rawSourceWidth) * outputWidth;
+          const destinationHeight = (sourceHeight / rawSourceHeight) * outputHeight;
+          symbolFluidContext.drawImage(
+            fluidHeroCanvas,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            destinationX,
+            destinationY,
+            destinationWidth,
+            destinationHeight
+          );
+          if (symbolHighlightCanvas && symbolHighlightContext) {
+            symbolHighlightContext.clearRect(0, 0, outputWidth, outputHeight);
+            symbolHighlightContext.drawImage(
+              fluidHeroCanvas,
+              sourceX,
+              sourceY,
+              sourceWidth,
+              sourceHeight,
+              destinationX,
+              destinationY,
+              destinationWidth,
+              destinationHeight
+            );
+            symbolHighlightContext.globalCompositeOperation = "destination-in";
+            const revealRadius = Math.min(outputWidth, outputHeight) * .27;
+            const revealGradient = symbolHighlightContext.createRadialGradient(
+              outputWidth * symbolHover.x,
+              outputHeight * symbolHover.y,
+              0,
+              outputWidth * symbolHover.x,
+              outputHeight * symbolHover.y,
+              revealRadius
+            );
+            revealGradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+            revealGradient.addColorStop(.38, "rgba(0, 0, 0, .94)");
+            revealGradient.addColorStop(.72, "rgba(0, 0, 0, .48)");
+            revealGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+            symbolHighlightContext.fillStyle = revealGradient;
+            symbolHighlightContext.fillRect(0, 0, outputWidth, outputHeight);
+            symbolHighlightContext.globalCompositeOperation = "source-over";
+          }
+        };
+
         const drawFluidHero = (now) => {
           if (!running) return;
           if (!reducedMotion && now - lastFrame < 32) {
@@ -248,6 +363,7 @@ if (hero && fluidHeroCanvas) {
           gl.uniform2f(mouse, pointer.x, pointer.y);
           gl.uniform1f(hoverUniform, hover);
           gl.drawArrays(gl.TRIANGLES, 0, 6);
+          drawSymbolFluid();
           if (!reducedMotion) frame = requestAnimationFrame(drawFluidHero);
         };
 
@@ -261,12 +377,44 @@ if (hero && fluidHeroCanvas) {
           cancelAnimationFrame(frame);
         };
 
-        hero.addEventListener("pointerenter", () => { hoverTarget = 1; });
-        hero.addEventListener("pointerleave", () => { hoverTarget = 0; });
+        const updateFluidHover = (event) => {
+          if (activeMainVariant !== "main-3" || !heroSymbol) {
+            hoverTarget = 1;
+            symbolHover.active = false;
+            heroSymbol?.classList.remove("is-symbol-hovered");
+            return;
+          }
+          const symbolRect = heroSymbol.getBoundingClientRect();
+          const symbolHovered = (
+            event.clientX >= symbolRect.left
+            && event.clientX <= symbolRect.right
+            && event.clientY >= symbolRect.top
+            && event.clientY <= symbolRect.bottom
+          );
+          hoverTarget = symbolHovered ? 1 : 0;
+          symbolHover.active = symbolHovered;
+          heroSymbol.classList.toggle("is-symbol-hovered", symbolHovered);
+          if (symbolHovered) {
+            const hoverX = ((event.clientX - symbolRect.left) / symbolRect.width) * 100;
+            const hoverY = ((event.clientY - symbolRect.top) / symbolRect.height) * 100;
+            symbolHover.x = hoverX / 100;
+            symbolHover.y = hoverY / 100;
+            heroSymbol.style.setProperty("--symbol-hover-x", `${hoverX}%`);
+            heroSymbol.style.setProperty("--symbol-hover-y", `${hoverY}%`);
+          }
+        };
+
+        hero.addEventListener("pointerenter", updateFluidHover);
+        hero.addEventListener("pointerleave", () => {
+          hoverTarget = 0;
+          symbolHover.active = false;
+          heroSymbol?.classList.remove("is-symbol-hovered");
+        });
         hero.addEventListener("pointermove", (event) => {
           const rect = fluidHeroCanvas.getBoundingClientRect();
           pointer.x = (event.clientX - rect.left) * (fluidHeroCanvas.width / rect.width);
           pointer.y = (rect.bottom - event.clientY) * (fluidHeroCanvas.height / rect.height);
+          updateFluidHover(event);
         }, { passive: true });
 
         const fluidObserver = new IntersectionObserver(([entry]) => {
@@ -709,12 +857,23 @@ if (countdown) {
   let displayHeight = 0;
   let dots = [];
   let labelCenters = [];
+  let main2Centers = [];
+  let main3Centers = [];
   let labelY = 0;
   let labelFontSize = 12;
+  let countdownFontSize = 44;
+  let numberCenterY = 0;
+  let numberTop = 0;
+  let numberBottom = 0;
   let maskDirty = true;
   let countdownFrame = 0;
   let countdownLastFrame = 0;
   let countdownVisible = true;
+  let renderedMainVariant = activeMainVariant;
+  let currentGroups = ["0", "00", "00", "00"];
+  let previousGroups = [...currentGroups];
+  let flipStartedAt = Number.NEGATIVE_INFINITY;
+  let countdownInitialized = false;
 
   function dotRandom(column, row, salt) {
     let value = Math.imul(column + 1, 0x9e3779b1)
@@ -726,6 +885,14 @@ if (countdown) {
     value = Math.imul(value, 0x846ca68b);
     value ^= value >>> 16;
     return (value >>> 0) / 4294967296;
+  }
+
+  function mixHexColors(base, target, amount) {
+    const read = (hex, offset) => Number.parseInt(hex.slice(offset, offset + 2), 16);
+    const channel = (from, to) => Math.round(from + (to - from) * amount)
+      .toString(16)
+      .padStart(2, "0");
+    return `#${channel(read(base, 1), read(target, 1))}${channel(read(base, 3), read(target, 3))}${channel(read(base, 5), read(target, 5))}`;
   }
 
   function drawTrackedLabel(text, centerX, y, tracking) {
@@ -753,13 +920,18 @@ if (countdown) {
       seconds: totalSeconds % 60
     };
 
-    const nextDisplayValue = [
+    const nextGroups = [
       String(values.days),
       String(values.hours).padStart(2, "0"),
       String(values.minutes).padStart(2, "0"),
       String(values.seconds).padStart(2, "0")
-    ].join(" : ");
+    ];
+    const nextDisplayValue = nextGroups.join(" : ");
     if (nextDisplayValue !== displayValue) {
+      previousGroups = countdownInitialized ? [...currentGroups] : [...nextGroups];
+      currentGroups = [...nextGroups];
+      flipStartedAt = countdownInitialized ? performance.now() : Number.NEGATIVE_INFINITY;
+      countdownInitialized = true;
       displayValue = nextDisplayValue;
       maskDirty = true;
     }
@@ -790,24 +962,64 @@ if (countdown) {
     const glassBottom = Math.max(3, labelY - labelFontSize - 15);
     const glassHeight = Math.min(200, Math.max(1, glassBottom - 2));
     const glassTop = Math.max(2, glassBottom - glassHeight);
-    const numberCenterY = glassTop + glassHeight / 2;
+    numberTop = glassTop;
+    numberBottom = glassBottom;
+    numberCenterY = glassTop + glassHeight / 2;
     const numberHeight = glassBottom;
-    let fontSize = Math.max(44, glassHeight * .78);
+    let countdownLayoutFontSize = activeMainVariant === "main-1"
+      ? Math.max(40, glassHeight * .7)
+      : Math.max(44, glassHeight * .78);
+    countdownFontSize = activeMainVariant === "main-1"
+      ? Math.max(36, countdownLayoutFontSize * (.62 / .7))
+      : countdownLayoutFontSize;
+    const groups = displayValue.split(":").map((group) => group.trim());
+    const separatorText = activeMainVariant === "main-1" ? "   " : " : ";
+    const maskDisplayValue = groups.join(separatorText);
 
     maskCanvas.width = Math.max(1, Math.ceil(displayWidth));
     maskCanvas.height = Math.max(1, Math.ceil(displayHeight));
     maskContext.clearRect(0, 0, displayWidth, displayHeight);
     maskContext.textAlign = "center";
     maskContext.textBaseline = "middle";
-    maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+    maskContext.font = `700 ${countdownLayoutFontSize}px "Open Sans", Arial, sans-serif`;
 
-    while (maskContext.measureText(displayValue).width > displayWidth - 28 && fontSize > 28) {
-      fontSize -= 2;
-      maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+    const measureGroups = () => {
+      const groupWidths = groups.map((group) => maskContext.measureText(group).width);
+      const rawSeparatorWidth = maskContext.measureText(separatorText).width;
+      const separatorWidth = activeMainVariant === "main-1"
+        ? Math.max(0, rawSeparatorWidth - 10)
+        : rawSeparatorWidth;
+      const totalWidth = groupWidths.reduce((sum, width) => sum + width, 0)
+        + separatorWidth * Math.max(0, groups.length - 1);
+      return { groupWidths, separatorWidth, totalWidth };
+    };
+    let groupMetrics = measureGroups();
+    while (groupMetrics.totalWidth > displayWidth - 28 && countdownLayoutFontSize > 28) {
+      countdownLayoutFontSize -= 2;
+      countdownFontSize = activeMainVariant === "main-1"
+        ? Math.max(36, countdownLayoutFontSize * (.62 / .7))
+        : countdownLayoutFontSize;
+      maskContext.font = `700 ${countdownLayoutFontSize}px "Open Sans", Arial, sans-serif`;
+      groupMetrics = measureGroups();
     }
 
+    const { groupWidths, separatorWidth, totalWidth } = groupMetrics;
+    let groupCursor = (displayWidth - totalWidth) / 2;
+    labelCenters = groupWidths.map((width, index) => {
+      const center = groupCursor + width / 2;
+      groupCursor += width + (index < groupWidths.length - 1 ? separatorWidth : 0);
+      return center;
+    });
+
     maskContext.fillStyle = "#000";
-    maskContext.fillText(displayValue, displayWidth / 2, numberCenterY);
+    maskContext.font = `700 ${countdownFontSize}px "Open Sans", Arial, sans-serif`;
+    if (activeMainVariant === "main-1") {
+      groups.forEach((group, index) => {
+        maskContext.fillText(group, labelCenters[index], numberCenterY);
+      });
+    } else {
+      maskContext.fillText(maskDisplayValue, displayWidth / 2, numberCenterY);
+    }
 
     const pixels = maskContext.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data;
     const gap = Math.max(5.5, Math.min(8.2, displayWidth / 135));
@@ -843,17 +1055,7 @@ if (countdown) {
     }
     dots = nextDots;
 
-    const groups = displayValue.split(":").map((group) => group.trim());
-    const separatorWidth = maskContext.measureText(" : ").width;
-    const groupWidths = groups.map((group) => maskContext.measureText(group).width);
-    const totalWidth = groupWidths.reduce((sum, width) => sum + width, 0) + separatorWidth * 3;
-    let groupCursor = (displayWidth - totalWidth) / 2;
-    labelCenters = groupWidths.map((width, index) => {
-      const center = groupCursor + width / 2;
-      groupCursor += width + (index < groupWidths.length - 1 ? separatorWidth : 0);
-      return center;
-    });
-    glassCards.forEach((card, index) => {
+    const glassWidths = glassCards.map((card, index) => {
       const previousCenter = labelCenters[index - 1];
       const nextCenter = labelCenters[index + 1];
       const neighboringDistance = Math.min(
@@ -862,13 +1064,35 @@ if (countdown) {
       );
       const availableWidth = Number.isFinite(neighboringDistance)
         ? neighboringDistance - Math.max(12, separatorWidth * .28)
-        : groupWidths[index] + fontSize * .42;
-      const desiredWidth = groupWidths[index] + Math.max(28, fontSize * .42);
-      const glassWidth = Math.max(groupWidths[index] + 16, Math.min(desiredWidth, availableWidth));
+        : groupWidths[index] + countdownLayoutFontSize * .42;
+      const glassPadding = activeMainVariant === "main-1"
+        ? Math.max(20, countdownLayoutFontSize * .3)
+        : Math.max(28, countdownLayoutFontSize * .42);
+      const desiredWidth = groupWidths[index] + glassPadding;
+      const minimumPadding = activeMainVariant === "main-1" ? 12 : 16;
+      return Math.max(groupWidths[index] + minimumPadding, Math.min(desiredWidth, availableWidth));
+    });
+    const main2Gap = Math.max(14, Math.min(38, displayWidth * .034));
+    const main2TotalWidth = glassWidths.reduce((sum, width) => sum + width, 0)
+      + main2Gap * Math.max(0, glassWidths.length - 1);
+    let main2Cursor = (displayWidth - main2TotalWidth) / 2;
+    main2Centers = glassWidths.map((width, index) => {
+      const center = main2Cursor + width / 2;
+      main2Cursor += width + (index < glassWidths.length - 1 ? main2Gap : 0);
+      return center;
+    });
+    const countdownMidpoint = displayWidth / 2;
+    main3Centers = main2Centers.map(
+      (center) => countdownMidpoint + (center - countdownMidpoint) * .86
+    );
+    const cardCenters = activeMainVariant === "main-2" || activeMainVariant === "main-3"
+      ? main2Centers
+      : labelCenters;
 
-      card.style.left = `${labelCenters[index]}px`;
+    glassCards.forEach((card, index) => {
+      card.style.left = `${cardCenters[index]}px`;
       card.style.top = `${glassTop}px`;
-      card.style.width = `${glassWidth}px`;
+      card.style.width = `${glassWidths[index]}px`;
       card.style.height = `${glassHeight}px`;
       card.classList.add("is-ready");
     });
@@ -883,36 +1107,148 @@ if (countdown) {
       return;
     }
     countdownLastFrame = time;
+    if (renderedMainVariant !== activeMainVariant) {
+      renderedMainVariant = activeMainVariant;
+      maskDirty = true;
+    }
     if (maskDirty) rebuildDotMask();
     context.clearRect(0, 0, displayWidth, displayHeight);
+    const activeCenters = activeMainVariant === "main-2" || activeMainVariant === "main-3"
+      ? main3Centers
+      : labelCenters;
 
-    dots.forEach((dot, index) => {
-      const deltaX = dot.baseX - pointer.x;
-      const deltaY = dot.baseY - pointer.y;
-      const distance = Math.max(1, Math.hypot(deltaX, deltaY));
-      const proximity = pointer.active ? Math.max(0, 1 - distance / 105) : 0;
-      const displacement = proximity * proximity * 24;
-      const targetX = dot.baseX + (deltaX / distance) * displacement;
-      const targetY = dot.baseY + (deltaY / distance) * displacement;
-      const easing = reducedMotion ? 1 : .16;
-      dot.x += (targetX - dot.x) * easing;
-      dot.y += (targetY - dot.y) * easing;
-      const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
-      const radius = dot.radius * (1 + pulse);
+    if (activeMainVariant === "main-2" || activeMainVariant === "main-3") {
+      const main3FontSize = Math.max(34, countdownFontSize * .62);
+      const flipProgress = reducedMotion
+        ? 1
+        : Math.max(0, Math.min(1, (time - flipStartedAt) / 560));
+      const easedFlip = 1 - Math.pow(1 - flipProgress, 3);
+      const travel = Math.max(34, (numberBottom - numberTop) * .58);
 
-      context.beginPath();
-      context.arc(dot.x, dot.y, Math.max(1.2, radius), 0, Math.PI * 2);
-      context.fillStyle = dot.color;
-      context.fill();
-    });
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.font = `600 ${main3FontSize}px "DM Sans", "Open Sans", Arial, sans-serif`;
+      context.fillStyle = "#111";
+      currentGroups.forEach((group, index) => {
+        const previousGroup = previousGroups[index] || "";
+        const digitCount = Math.max(previousGroup.length, group.length);
+        const previousDigits = previousGroup.padStart(digitCount, " ").split("");
+        const currentDigits = group.padStart(digitCount, " ").split("");
+        const digitWidth = context.measureText("0").width;
+        const digitAdvance = digitWidth - Math.max(5, main3FontSize * .1);
+        const totalDigitsWidth = digitWidth + digitAdvance * Math.max(0, digitCount - 1);
+        const firstDigitX = activeCenters[index] - totalDigitsWidth / 2 + digitWidth / 2;
+
+        currentDigits.forEach((digit, digitIndex) => {
+          const previousDigit = previousDigits[digitIndex];
+          const digitX = firstDigitX + digitIndex * digitAdvance;
+          const changed = previousDigit !== digit && flipProgress < 1;
+          context.save();
+          context.beginPath();
+          context.rect(
+            digitX - digitWidth * .56,
+            numberTop,
+            digitWidth * 1.12,
+            numberBottom - numberTop
+          );
+          context.clip();
+
+          if (changed) {
+            if (previousDigit.trim()) {
+              context.globalAlpha = 1 - easedFlip;
+              context.fillText(previousDigit, digitX, numberCenterY + easedFlip * travel);
+            }
+            if (digit.trim()) {
+              context.globalAlpha = Math.min(1, easedFlip * 1.35);
+              context.fillText(digit, digitX, numberCenterY - (1 - easedFlip) * travel);
+            }
+          } else if (digit.trim()) {
+            context.globalAlpha = 1;
+            context.fillText(digit, digitX, numberCenterY);
+          }
+          context.restore();
+        });
+      });
+    } else {
+      dots.forEach((dot, index) => {
+        const deltaX = dot.baseX - pointer.x;
+        const deltaY = dot.baseY - pointer.y;
+        const distance = Math.max(1, Math.hypot(deltaX, deltaY));
+        const proximity = pointer.active ? Math.max(0, 1 - distance / 105) : 0;
+        const displacement = proximity * proximity * 24;
+        const targetX = dot.baseX + (deltaX / distance) * displacement;
+        const targetY = dot.baseY + (deltaY / distance) * displacement;
+        const easing = reducedMotion ? 1 : .16;
+        dot.x += (targetX - dot.x) * easing;
+        dot.y += (targetY - dot.y) * easing;
+        const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
+        const radius = Math.max(1.2, dot.radius * (1 + pulse));
+
+        if (activeMainVariant === "main-1") {
+          const beadRadius = radius * 1.18;
+          let beadColor = dot.color;
+          if (dot.color === "#111111") beadColor = "#f2a7ca";
+          if (dot.color === "#173b63") beadColor = "#f19a84";
+          context.beginPath();
+          context.arc(
+            dot.x + beadRadius * .22,
+            dot.y + beadRadius * .3,
+            beadRadius * 1.06,
+            0,
+            Math.PI * 2
+          );
+          context.fillStyle = "rgba(23, 59, 99, .28)";
+          context.fill();
+
+          context.beginPath();
+          context.arc(dot.x, dot.y, beadRadius, 0, Math.PI * 2);
+          const beadGradient = context.createRadialGradient(
+            dot.x - beadRadius * .38,
+            dot.y - beadRadius * .42,
+            beadRadius * .08,
+            dot.x + beadRadius * .08,
+            dot.y + beadRadius * .12,
+            beadRadius * 1.12
+          );
+          beadGradient.addColorStop(0, mixHexColors(beadColor, "#ffffff", .68));
+          beadGradient.addColorStop(.28, beadColor);
+          beadGradient.addColorStop(.76, mixHexColors(beadColor, "#6f7893", .34));
+          beadGradient.addColorStop(1, mixHexColors(beadColor, "#38445f", .5));
+          context.fillStyle = beadGradient;
+          context.fill();
+          context.lineWidth = Math.max(.35, beadRadius * .12);
+          context.strokeStyle = "rgba(255, 255, 255, .52)";
+          context.stroke();
+
+          context.beginPath();
+          context.arc(
+            dot.x - beadRadius * .3,
+            dot.y - beadRadius * .34,
+            Math.max(.4, beadRadius * .25),
+            0,
+            Math.PI * 2
+          );
+          context.fillStyle = "rgba(255, 255, 255, .82)";
+          context.fill();
+        } else {
+          context.beginPath();
+          context.arc(dot.x, dot.y, radius, 0, Math.PI * 2);
+          context.fillStyle = dot.color;
+          context.fill();
+        }
+      });
+    }
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.font = `700 ${labelFontSize}px "Open Sans", sans-serif`;
     context.fillStyle = "#111";
     const labelTracking = Math.max(1, Math.min(1.8, displayWidth / 650));
+    const activeLabelY = activeMainVariant === "main-2" || activeMainVariant === "main-3"
+      ? labelY - 10
+      : labelY;
     labels.forEach((label, index) => {
-      drawTrackedLabel(label, labelCenters[index], labelY, labelTracking);
+      drawTrackedLabel(label, activeCenters[index], activeLabelY, labelTracking);
     });
 
     if (!reducedMotion) countdownFrame = window.requestAnimationFrame(drawCountdown);
@@ -967,19 +1303,17 @@ if (guestGallery) {
 
   function renderGuestGallery() {
     const viewportWidth = guestGallery.clientWidth;
-    const curveWidth = Math.max(720, viewportWidth / 1.5);
+    const fadeWidth = Math.max(680, viewportWidth / 1.45);
     guestCards.forEach((card, index) => {
       let x = index * cardSpacing - carouselScroll;
       while (x < -totalStripWidth / 2) x += totalStripWidth;
       while (x > totalStripWidth / 2) x -= totalStripWidth;
 
-      const progress = x / curveWidth;
+      const progress = x / fadeWidth;
       const distance = Math.abs(progress);
-      const z = -Math.pow(distance, 2) * 500;
-      const rotate = progress * 45;
       const opacity = Math.max(0, 1 - Math.pow(distance, 3));
 
-      card.style.transform = `translate3d(calc(-50% + ${x}px), 0, ${z}px) rotateY(${rotate}deg)`;
+      card.style.transform = `translate3d(calc(-50% + ${x}px), 0, 0)`;
       card.style.opacity = String(opacity);
       card.style.filter = `saturate(${.72 + opacity * .28}) brightness(${.86 + opacity * .14})`;
       card.style.zIndex = String(Math.round((1 - distance) * 100));
@@ -1553,6 +1887,8 @@ if (submitPage) {
     const ageConfirmation = field("age-confirmation");
     const teamSizeOptions = [...applicationForm.querySelectorAll('input[name="team-size"]')];
     const teamSizeField = applicationForm.querySelector(".team-size");
+    const attendanceOptions = [...applicationForm.querySelectorAll('input[name="final-event-attendance"]')];
+    const attendanceField = applicationForm.querySelector(".attendance-availability");
     const platformField = applicationForm.querySelector(".platform-field");
 
     validationRules = [
@@ -1615,6 +1951,15 @@ if (submitPage) {
         validate: () => teamSizeOptions.some((option) => option.checked)
           ? ""
           : "팀 구성 인원을 선택해주세요."
+      },
+      {
+        key: "final-event-attendance",
+        targets: attendanceOptions,
+        container: attendanceField,
+        focusTarget: attendanceOptions[0],
+        validate: () => attendanceOptions.some((option) => option.checked)
+          ? ""
+          : "본선 행사 참여 가능 여부를 선택해주세요."
       },
       {
         key: "game-thumbnail",
@@ -2220,12 +2565,12 @@ document.querySelectorAll("[data-home-target]").forEach((link) => {
       });
     });
 
-    if (location.hash === "#home" || !location.hash) {
+    if (activeRouteId === "home") {
       scrollToTarget();
       return;
     }
 
     window.addEventListener("hashchange", scrollToTarget, { once: true });
-    location.hash = "home";
+    location.hash = activeMainVariant;
   });
 });
