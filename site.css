@@ -3698,6 +3698,13 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   line-height: 1.55;
   word-break: keep-all;
 }
+.attendance-note {
+  margin: -1px 0 16px;
+  color: #777;
+  font-size: 11px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
 .application-form-grid em {
   margin-left: 5px;
   color: #999;
@@ -4220,8 +4227,8 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .submission-guidance {
   margin-top: 26px;
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
 }
 .submission-guidance p {
   margin: 0;
@@ -4231,6 +4238,18 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   word-break: keep-all;
 }
 .main-submission .submission-guidance p { color: #555; }
+.submission-guidance .submission-guidance-highlight {
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 7px 5px;
+  color: var(--ink);
+  background: #f8dc61;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
 .submission-guidance ul {
   margin: 0;
   padding: 0;
@@ -4259,7 +4278,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .main-submission .submission-guidance li::before { background: var(--ink); }
 .submission-guidance a {
   width: max-content;
-  margin-top: 8px;
+  margin-top: 2px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -4821,6 +4840,10 @@ body.terms-modal-open { overflow: hidden; }
   .platform-options label > span { min-height: 104px; }
   .main-submission { padding: 32px 24px 30px; }
   .submission-guidance { gap: 18px; }
+  .submission-guidance .submission-guidance-highlight {
+    width: fit-content;
+    white-space: normal;
+  }
   .submit-success {
     min-height: 100svh;
     padding: calc(var(--nav-height) + 32px) 20px 44px;

@@ -1576,9 +1576,6 @@ if (submitPage) {
   const thumbnailStatus = submitPage.querySelector("[data-thumbnail-status]");
   const gameDescription = submitPage.querySelector("[data-game-description]");
   const descriptionCount = submitPage.querySelector("[data-description-count]");
-  const platformOptions = [...submitPage.querySelectorAll('input[name="game-platform"]')];
-  const platformOtherWrap = submitPage.querySelector("[data-platform-other-wrap]");
-  const platformOtherInput = submitPage.querySelector("[data-platform-other]");
   const formStatus = applicationForm.querySelector(".form-status");
   const submitButton = applicationForm.querySelector('button[type="submit"]');
   const applicationTitle = submitPage.querySelector("[data-application-title]");
@@ -2015,20 +2012,11 @@ if (submitPage) {
     descriptionCount.textContent = String(gameDescription.value.length);
   }
 
-  function updatePlatformOther() {
-    const selectedPlatform = platformOptions.find((option) => option.checked)?.value;
-    const isOther = selectedPlatform === "Other";
-    platformOtherWrap.hidden = !isOther;
-    platformOtherInput.required = isOther;
-    if (!isOther) platformOtherInput.value = "";
-  }
-
   function resetProjectFields() {
     clearThumbnailPreview();
     thumbnailInput.setCustomValidity("");
     thumbnailStatus.textContent = "";
     updateDescriptionCount();
-    updatePlatformOther();
   }
 
   function isValidUrl(value) {
@@ -2115,11 +2103,8 @@ if (submitPage) {
     const eventConsent = submitPage.querySelector('[data-consent-trigger="event"]');
     const privacyConsent = submitPage.querySelector('[data-consent-trigger="privacy"]');
     const ageConfirmation = field("age-confirmation");
-    const teamSizeOptions = [...applicationForm.querySelectorAll('input[name="team-size"]')];
-    const teamSizeField = applicationForm.querySelector(".team-size");
     const attendanceOptions = [...applicationForm.querySelectorAll('input[name="final-event-attendance"]')];
     const attendanceField = applicationForm.querySelector(".attendance-availability");
-    const platformField = applicationForm.querySelector(".platform-field");
 
     validationRules = [
       {
@@ -2192,15 +2177,6 @@ if (submitPage) {
         return field("team-name").value.trim() ? "" : "외부에 표시할 팀명을 입력해주세요.";
       }),
       {
-        key: "team-size",
-        targets: teamSizeOptions,
-        container: teamSizeField,
-        focusTarget: teamSizeOptions[0],
-        validate: () => teamSizeOptions.some((option) => option.checked)
-          ? ""
-          : "팀 구성 인원을 선택해주세요."
-      },
-      {
         key: "final-event-attendance",
         targets: attendanceOptions,
         container: attendanceField,
@@ -2209,6 +2185,17 @@ if (submitPage) {
           ? ""
           : "본선 행사 참여 가능 여부를 선택해주세요."
       },
+      inputRule("game-title", () => {
+        return field("game-title").value.trim() ? "" : "게임 제목을 입력해주세요.";
+      }),
+      inputRule("game-description", () => {
+        return field("game-description").value.trim() ? "" : "게임 소개를 입력해주세요.";
+      }),
+      inputRule("playable-game-link", () => {
+        const value = field("playable-game-link").value.trim();
+        if (!value) return "플레이 가능한 게임 링크를 입력해주세요.";
+        return isValidUrl(value) ? "" : "http:// 또는 https://로 시작하는 링크를 입력해주세요.";
+      }),
       {
         key: "game-thumbnail",
         targets: [thumbnailInput],
@@ -2226,32 +2213,6 @@ if (submitPage) {
             : "파일 크기는 최대 10MB까지 가능합니다.";
         }
       },
-      inputRule("game-title", () => {
-        return field("game-title").value.trim() ? "" : "게임 제목을 입력해주세요.";
-      }),
-      inputRule("game-description", () => {
-        return field("game-description").value.trim() ? "" : "게임 소개를 입력해주세요.";
-      }),
-      {
-        key: "game-platform",
-        targets: platformOptions,
-        container: platformField,
-        focusTarget: platformOptions[0],
-        validate: () => platformOptions.some((option) => option.checked)
-          ? ""
-          : "게임 플랫폼을 하나 선택해주세요."
-      },
-      inputRule("game-platform-other", () => {
-        return platformOtherInput.value.trim() ? "" : "기타 플랫폼을 직접 입력해주세요.";
-      }, {
-        container: platformOtherWrap,
-        isActive: () => !platformOtherWrap.hidden
-      }),
-      inputRule("playable-game-link", () => {
-        const value = field("playable-game-link").value.trim();
-        if (!value) return "플레이 가능한 게임 링크를 입력해주세요.";
-        return isValidUrl(value) ? "" : "http:// 또는 https://로 시작하는 링크를 입력해주세요.";
-      }),
       inputRule("demo-video-link", () => {
         const value = field("demo-video-link").value.trim();
         return !value || isValidUrl(value)
@@ -2522,9 +2483,6 @@ if (submitPage) {
   });
   thumbnailInput.addEventListener("change", updateThumbnailPreview);
   gameDescription.addEventListener("input", updateDescriptionCount);
-  platformOptions.forEach((option) => {
-    option.addEventListener("change", updatePlatformOther);
-  });
   resetProjectFields();
   createValidationRules();
   bindValidationFeedback();
