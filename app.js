@@ -1716,6 +1716,8 @@ if (submitPage) {
     const ageConfirmation = field("age-confirmation");
     const teamSizeOptions = [...applicationForm.querySelectorAll('input[name="team-size"]')];
     const teamSizeField = applicationForm.querySelector(".team-size");
+    const attendanceOptions = [...applicationForm.querySelectorAll('input[name="final-event-attendance"]')];
+    const attendanceField = applicationForm.querySelector(".attendance-availability");
     const platformField = applicationForm.querySelector(".platform-field");
 
     validationRules = [
@@ -1778,6 +1780,15 @@ if (submitPage) {
         validate: () => teamSizeOptions.some((option) => option.checked)
           ? ""
           : "팀 구성 인원을 선택해주세요."
+      },
+      {
+        key: "final-event-attendance",
+        targets: attendanceOptions,
+        container: attendanceField,
+        focusTarget: attendanceOptions[0],
+        validate: () => attendanceOptions.some((option) => option.checked)
+          ? ""
+          : "본선 행사 참여 가능 여부를 선택해주세요."
       },
       {
         key: "game-thumbnail",

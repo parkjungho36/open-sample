@@ -905,7 +905,10 @@
               <div class="application-section-title">
                 <span>02</span>
                 <div>
-                  <h2 id="applicant-title">GAME HACKATHON 참가 신청</h2>
+                  <h2 class="applicant-title" id="applicant-title">
+                    <span>GAME HACKATHON</span>
+                    <span>참가 신청</span>
+                  </h2>
                   <p>대표 신청자의 인적 사항을 기재해주세요.</p>
                 </div>
               </div>
@@ -935,6 +938,20 @@
                     <label><input type="radio" name="team-size" value="1" required><span>1인</span></label>
                     <label><input type="radio" name="team-size" value="2"><span>2인</span></label>
                     <label><input type="radio" name="team-size" value="3"><span>3인</span></label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="attendance-availability">
+                  <legend>본선 진출 시 서울에서 열리는 오프라인 행사에 참여할 수 있나요?<sup>*</sup></legend>
+                  <div class="attendance-options">
+                    <label>
+                      <input type="radio" name="final-event-attendance" value="yes" required>
+                      <span>예, 참여할 수 있습니다</span>
+                    </label>
+                    <label>
+                      <input type="radio" name="final-event-attendance" value="no">
+                      <span>아니요, 참여가 어렵습니다</span>
+                    </label>
                   </div>
                 </fieldset>
               </fieldset>
@@ -1038,7 +1055,7 @@
                       <li>심사 기간 동안 심사위원이 핵심 기능을 직접 플레이할 수 있어야 합니다.</li>
                       <li>기존 프로젝트를 활용할 경우 챌린지 기간에 새롭게 개발한 내용을 명기해주세요.</li>
                     </ul>
-                    <a href="#apply:track1-submission-guide">상세한 제출 조건 확인하기 <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+                    <a href="#apply:track1-submission-guide" target="_blank" rel="noopener">상세한 제출 조건 확인하기 <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
                   </div>
                 </section>
 

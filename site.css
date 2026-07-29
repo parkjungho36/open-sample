@@ -3258,6 +3258,14 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   line-height: 1.05;
   word-break: keep-all;
 }
+.application-section-title h2.applicant-title {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: .28em;
+}
+.application-section-title h2.applicant-title > span {
+  white-space: nowrap;
+}
 .application-section-title > div > p:last-child {
   margin: 14px 0 0;
   color: #777;
@@ -3659,7 +3667,8 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   font-size: 12px;
 }
 .applicant-fields,
-.team-size {
+.team-size,
+.attendance-availability {
   margin: 0;
   padding: 0;
   border: 0;
@@ -3679,11 +3688,16 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   min-width: 0;
 }
 .application-form-grid label > span,
-.team-size legend {
+.team-size legend,
+.attendance-availability legend {
   display: block;
   margin-bottom: 10px;
   font-size: 13px;
   font-weight: 600;
+}
+.attendance-availability legend {
+  line-height: 1.55;
+  word-break: keep-all;
 }
 .application-form-grid em {
   margin-left: 5px;
@@ -3735,6 +3749,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   border-color: #d56f4b;
 }
 .team-size.has-error .team-size-options span,
+.attendance-availability.has-error .attendance-options span,
 .platform-field.has-error .platform-options label > span {
   border-color: #d56f4b;
 }
@@ -3743,23 +3758,29 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   background: #fff9f7;
 }
 .field-wide { grid-column: 1 / -1; }
-.team-size { margin-top: 44px; }
-.team-size-options {
+.team-size,
+.attendance-availability { margin-top: 44px; }
+.team-size-options,
+.attendance-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
-.team-size-options label {
+.team-size-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.attendance-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.team-size-options label,
+.attendance-options label {
   position: relative;
   min-width: 0;
 }
-.team-size-options input {
+.team-size-options input,
+.attendance-options input {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
 }
-.team-size-options span {
+.team-size-options span,
+.attendance-options span {
   min-height: 52px;
   display: grid;
   place-items: center;
@@ -3769,12 +3790,14 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   font-size: 14px;
   cursor: pointer;
 }
-.team-size-options input:checked + span {
+.team-size-options input:checked + span,
+.attendance-options input:checked + span {
   border-color: var(--ink);
   color: #fff;
   background: var(--ink);
 }
-.team-size-options input:focus-visible + span {
+.team-size-options input:focus-visible + span,
+.attendance-options input:focus-visible + span {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
@@ -4039,18 +4062,17 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 }
 .main-submission {
   --submission-accent: #31b8c7;
-  --submission-active: #dcf3f5;
   padding: 44px 42px 40px;
   border: 0;
   border-radius: .38rem;
   color: var(--ink);
-  background: var(--submission-active);
+  background: #fff;
   box-shadow: inset 0 0 0 2px var(--submission-accent);
-  transition: background-color .2s ease, box-shadow .2s ease;
+  transition: box-shadow .2s ease;
 }
 .main-submission:focus-within {
-  background: #d4f0f3;
-  box-shadow: inset 0 0 0 2px var(--submission-accent), 0 0 0 3px rgba(49, 184, 199, .14);
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--submission-accent);
 }
 .main-submission .submission-type {
   color: #d56f4b;
@@ -4060,10 +4082,10 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .main-submission .project-label { color: var(--ink); }
 .main-submission input:not([type="file"]) {
   color: var(--ink);
-  border-color: #75aeb4;
+  border-color: #aaa;
 }
-.main-submission input:not([type="file"])::placeholder { color: #55858b; }
-.main-submission input:not([type="file"]):focus { border-color: #087682; }
+.main-submission input:not([type="file"])::placeholder { color: #999; }
+.main-submission input:not([type="file"]):focus { border-color: var(--ink); }
 .submission-type {
   margin-bottom: 18px;
   color: #777;
@@ -4084,7 +4106,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   line-height: 1.7;
   word-break: keep-all;
 }
-.main-submission .submission-guidance p { color: #155e66; }
+.main-submission .submission-guidance p { color: #555; }
 .submission-guidance ul {
   margin: 0;
   padding: 0;
@@ -4099,7 +4121,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   font-size: 11px;
   line-height: 1.55;
 }
-.main-submission .submission-guidance li { color: #376f75; }
+.main-submission .submission-guidance li { color: #777; }
 .submission-guidance li::before {
   content: "";
   width: 5px;
@@ -4110,7 +4132,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   border-radius: 50%;
   background: var(--ink);
 }
-.main-submission .submission-guidance li::before { background: var(--submission-accent); }
+.main-submission .submission-guidance li::before { background: var(--ink); }
 .submission-guidance a {
   width: max-content;
   margin-top: 8px;
@@ -4122,10 +4144,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   font-size: 11px;
   font-weight: 600;
 }
-.main-submission .submission-guidance a {
-  color: #155e66;
-  border-color: #155e66;
-}
+.main-submission .submission-guidance a { color: var(--ink); border-color: var(--ink); }
 .submission-guidance a svg {
   width: 13px;
   height: 13px;
@@ -4647,6 +4666,7 @@ body.terms-modal-open { overflow: hidden; }
   }
   .application-form-grid { grid-template-columns: 1fr; }
   .field-wide { grid-column: auto; }
+  .attendance-options { grid-template-columns: 1fr; }
   .project-field-heading {
     flex-direction: column;
     gap: 8px;
@@ -4752,6 +4772,7 @@ body.terms-modal-open { overflow: hidden; }
   }
   .application-section-title > span { font-size: 38px; }
   .application-section-title h2 { font-size: 28px; }
+  .application-section-title h2.applicant-title { font-size: 26px; }
   .team-size-options { gap: 7px; }
   .account-identity strong { font-size: 14px; }
 }
