@@ -68,11 +68,24 @@ a { color: inherit; }
 }
 .brand-mark img { width: 94px; display: block; transition: filter .35s ease; }
 .nav a { text-decoration: none; font-size: 13px; }
-.nav nav { display: flex; gap: 26px; }
+.nav nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 .nav nav a { color: #777; transition: color .2s; }
 .nav nav a:hover,
 .nav nav a[aria-current="page"] { color: var(--ink); }
 .nav nav a[aria-current="page"] { font-weight: 700; }
+.main-variant-link[aria-current="page"] {
+  color: var(--ink);
+}
+.nav-divider {
+  width: 1px;
+  height: 14px;
+  margin-inline: 2px;
+  background: rgba(17, 17, 17, .16);
+}
 .nav-cta,
 form button {
   background: var(--ink);
@@ -1304,8 +1317,8 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 }
 .footer-partner-logo {
   display: block;
-  width: 112px;
-  height: 24px;
+  width: 132px;
+  height: 28px;
   object-fit: contain;
   object-position: left center;
   filter: invert(1);
@@ -1443,8 +1456,10 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 @media (max-width: 760px) {
   :root { --nav-height: 64px; }
   .nav { height: var(--nav-height); }
-  .nav nav { gap: 13px; }
+  .nav nav { gap: 16px; }
   .nav nav a { font-size: 12px; }
+  .nav-divider,
+  .primary-route-link { display: none; }
   .nav-cta { display: none; }
   .brand-mark img { width: 78px; }
   .page { min-height: calc(100vh - 64px); }
@@ -4704,6 +4719,10 @@ body.terms-modal-open { overflow: hidden; }
   transform: translateY(10px);
 }
 
+body[data-main-variant="main-2"] .dot-countdown {
+  cursor: default;
+}
+
 @media (max-width: 720px) {
   #home .hero-title-main,
   #home .hero-title-location {
@@ -4714,4 +4733,14 @@ body.terms-modal-open { overflow: hidden; }
   #home .hero-title-main {
     margin-bottom: 12px;
   }
+}
+
+/* Use one compact tracking rhythm outside the homepage hero. */
+body :not(#home .hero, #home .hero *) {
+  letter-spacing: -.04em;
+}
+
+/* Preserve the homepage hero's existing inherited tracking. */
+#home .hero {
+  letter-spacing: -.045em;
 }
