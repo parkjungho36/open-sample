@@ -848,6 +848,12 @@ if (countdown) {
   const context = canvas.getContext("2d");
   const maskCanvas = document.createElement("canvas");
   const maskContext = maskCanvas.getContext("2d", { willReadFrequently: true });
+  const main3DigitMaskCanvas = document.createElement("canvas");
+  const main3DigitMaskContext = main3DigitMaskCanvas.getContext("2d");
+  const main3DigitTextureCanvas = document.createElement("canvas");
+  const main3DigitTextureContext = main3DigitTextureCanvas.getContext("2d");
+  const main3DigitHighlightCanvas = document.createElement("canvas");
+  const main3DigitHighlightContext = main3DigitHighlightCanvas.getContext("2d");
   const glassCards = [...countdown.querySelectorAll("[data-countdown-glass-card]")];
   const labels = ["DAYS", "HOURS", "MINS", "SECS"];
   const palette = ["#087dcc", "#11cfe3", "#82d8f4", "#c8c0f6", "#ffd400", "#111111", "#173b63"];
@@ -893,6 +899,149 @@ if (countdown) {
       .toString(16)
       .padStart(2, "0");
     return `#${channel(read(base, 1), read(target, 1))}${channel(read(base, 3), read(target, 3))}${channel(read(base, 5), read(target, 5))}`;
+  }
+
+  function drawFlippingDigits(targetContext, time, centers, fontSize, fillStyle) {
+    const flipProgress = reducedMotion
+      ? 1
+      : Math.max(0, Math.min(1, (time - flipStartedAt) / 560));
+    const easedFlip = 1 - Math.pow(1 - flipProgress, 3);
+    const travel = Math.max(34, (numberBottom - numberTop) * .58);
+
+    targetContext.textAlign = "center";
+    targetContext.textBaseline = "middle";
+    targetContext.font = `600 ${fontSize}px "DM Sans", "Open Sans", Arial, sans-serif`;
+    targetContext.fillStyle = fillStyle;
+
+    currentGroups.forEach((group, index) => {
+      const previousGroup = previousGroups[index] || "";
+      const digitCount = Math.max(previousGroup.length, group.length);
+      const previousDigits = previousGroup.padStart(digitCount, " ").split("");
+      const currentDigits = group.padStart(digitCount, " ").split("");
+      const digitWidth = targetContext.measureText("0").width;
+      const digitAdvance = digitWidth - Math.max(.5, fontSize * .006);
+      const totalDigitsWidth = digitWidth + digitAdvance * Math.max(0, digitCount - 1);
+      const firstDigitX = centers[index] - totalDigitsWidth / 2 + digitWidth / 2;
+
+      currentDigits.forEach((digit, digitIndex) => {
+        const previousDigit = previousDigits[digitIndex];
+        const digitX = firstDigitX + digitIndex * digitAdvance;
+        const changed = previousDigit !== digit && flipProgress < 1;
+        targetContext.save();
+        targetContext.beginPath();
+        targetContext.rect(
+          digitX - digitWidth * .56,
+          numberTop,
+          digitWidth * 1.12,
+          numberBottom - numberTop
+        );
+        targetContext.clip();
+
+        if (changed) {
+          if (previousDigit.trim()) {
+            targetContext.globalAlpha = 1 - easedFlip;
+            targetContext.fillText(previousDigit, digitX, numberCenterY + easedFlip * travel);
+          }
+          if (digit.trim()) {
+            targetContext.globalAlpha = Math.min(1, easedFlip * 1.35);
+            targetContext.fillText(digit, digitX, numberCenterY - (1 - easedFlip) * travel);
+          }
+        } else if (digit.trim()) {
+          targetContext.globalAlpha = 1;
+          targetContext.fillText(digit, digitX, numberCenterY);
+        }
+        targetContext.restore();
+      });
+    });
+  }
+
+  function drawMain3Texture(targetContext, filter) {
+    const textureSource = symbolFluidCanvas?.width ? symbolFluidCanvas : fluidHeroCanvas;
+    targetContext.save();
+    targetContext.filter = filter;
+    if (textureSource?.width && textureSource?.height) {
+      targetContext.drawImage(
+        textureSource,
+        0,
+        0,
+        textureSource.width,
+        textureSource.height,
+        0,
+        0,
+        displayWidth,
+        displayHeight
+      );
+    } else {
+      const fallbackGradient = targetContext.createLinearGradient(0, 0, displayWidth, displayHeight);
+      fallbackGradient.addColorStop(0, "#d487a9");
+      fallbackGradient.addColorStop(.48, "#8d89c7");
+      fallbackGradient.addColorStop(1, "#58a8bf");
+      targetContext.fillStyle = fallbackGradient;
+      targetContext.fillRect(0, 0, displayWidth, displayHeight);
+    }
+    targetContext.restore();
+  }
+
+  function drawMain3MaskedDigits(time, centers, fontSize) {
+    [
+      main3DigitMaskCanvas,
+      main3DigitTextureCanvas,
+      main3DigitHighlightCanvas
+    ].forEach((offscreenCanvas) => {
+      if (
+        offscreenCanvas.width !== Math.ceil(displayWidth)
+        || offscreenCanvas.height !== Math.ceil(displayHeight)
+      ) {
+        offscreenCanvas.width = Math.max(1, Math.ceil(displayWidth));
+        offscreenCanvas.height = Math.max(1, Math.ceil(displayHeight));
+      }
+    });
+
+    main3DigitMaskContext.clearRect(0, 0, displayWidth, displayHeight);
+    drawFlippingDigits(main3DigitMaskContext, time, centers, fontSize, "#fff");
+
+    main3DigitTextureContext.clearRect(0, 0, displayWidth, displayHeight);
+    drawMain3Texture(
+      main3DigitTextureContext,
+      "saturate(2.05) contrast(1.32) brightness(.6)"
+    );
+    main3DigitTextureContext.globalCompositeOperation = "destination-in";
+    main3DigitTextureContext.drawImage(main3DigitMaskCanvas, 0, 0);
+    main3DigitTextureContext.globalCompositeOperation = "source-over";
+
+    context.save();
+    context.shadowColor = "rgba(36, 49, 88, .22)";
+    context.shadowBlur = 9;
+    context.shadowOffsetY = 2;
+    context.drawImage(main3DigitTextureCanvas, 0, 0);
+    context.restore();
+
+    if (!pointer.active) return;
+    main3DigitHighlightContext.clearRect(0, 0, displayWidth, displayHeight);
+    drawMain3Texture(
+      main3DigitHighlightContext,
+      "saturate(1.85) contrast(1.12) brightness(1.02)"
+    );
+    main3DigitHighlightContext.globalCompositeOperation = "destination-in";
+    main3DigitHighlightContext.drawImage(main3DigitMaskCanvas, 0, 0);
+    const revealRadius = Math.max(72, Math.min(128, displayWidth * .12));
+    const revealGradient = main3DigitHighlightContext.createRadialGradient(
+      pointer.x,
+      pointer.y,
+      0,
+      pointer.x,
+      pointer.y,
+      revealRadius
+    );
+    revealGradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+    revealGradient.addColorStop(.42, "rgba(0, 0, 0, .9)");
+    revealGradient.addColorStop(.78, "rgba(0, 0, 0, .34)");
+    revealGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    main3DigitHighlightContext.globalCompositeOperation = "destination-in";
+    main3DigitHighlightContext.fillStyle = revealGradient;
+    main3DigitHighlightContext.fillRect(0, 0, displayWidth, displayHeight);
+    main3DigitHighlightContext.globalCompositeOperation = "source-over";
+    context.drawImage(main3DigitHighlightCanvas, 0, 0);
   }
 
   function drawTrackedLabel(text, centerX, y, tracking) {
@@ -1083,7 +1232,7 @@ if (countdown) {
     });
     const countdownMidpoint = displayWidth / 2;
     main3Centers = main2Centers.map(
-      (center) => countdownMidpoint + (center - countdownMidpoint) * .86
+      (center) => countdownMidpoint + (center - countdownMidpoint) * .78
     );
     const cardCenters = activeMainVariant === "main-2" || activeMainVariant === "main-3"
       ? main2Centers
@@ -1119,56 +1268,17 @@ if (countdown) {
 
     if (activeMainVariant === "main-2" || activeMainVariant === "main-3") {
       const main3FontSize = Math.max(34, countdownFontSize * .62);
-      const flipProgress = reducedMotion
-        ? 1
-        : Math.max(0, Math.min(1, (time - flipStartedAt) / 560));
-      const easedFlip = 1 - Math.pow(1 - flipProgress, 3);
-      const travel = Math.max(34, (numberBottom - numberTop) * .58);
-
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.font = `600 ${main3FontSize}px "DM Sans", "Open Sans", Arial, sans-serif`;
-      context.fillStyle = "#111";
-      currentGroups.forEach((group, index) => {
-        const previousGroup = previousGroups[index] || "";
-        const digitCount = Math.max(previousGroup.length, group.length);
-        const previousDigits = previousGroup.padStart(digitCount, " ").split("");
-        const currentDigits = group.padStart(digitCount, " ").split("");
-        const digitWidth = context.measureText("0").width;
-        const digitAdvance = digitWidth - Math.max(5, main3FontSize * .1);
-        const totalDigitsWidth = digitWidth + digitAdvance * Math.max(0, digitCount - 1);
-        const firstDigitX = activeCenters[index] - totalDigitsWidth / 2 + digitWidth / 2;
-
-        currentDigits.forEach((digit, digitIndex) => {
-          const previousDigit = previousDigits[digitIndex];
-          const digitX = firstDigitX + digitIndex * digitAdvance;
-          const changed = previousDigit !== digit && flipProgress < 1;
-          context.save();
-          context.beginPath();
-          context.rect(
-            digitX - digitWidth * .56,
-            numberTop,
-            digitWidth * 1.12,
-            numberBottom - numberTop
-          );
-          context.clip();
-
-          if (changed) {
-            if (previousDigit.trim()) {
-              context.globalAlpha = 1 - easedFlip;
-              context.fillText(previousDigit, digitX, numberCenterY + easedFlip * travel);
-            }
-            if (digit.trim()) {
-              context.globalAlpha = Math.min(1, easedFlip * 1.35);
-              context.fillText(digit, digitX, numberCenterY - (1 - easedFlip) * travel);
-            }
-          } else if (digit.trim()) {
-            context.globalAlpha = 1;
-            context.fillText(digit, digitX, numberCenterY);
-          }
-          context.restore();
-        });
-      });
+      if (activeMainVariant === "main-3") {
+        drawMain3MaskedDigits(time, activeCenters, main3FontSize);
+      } else {
+        drawFlippingDigits(
+          context,
+          time,
+          activeCenters,
+          main3FontSize,
+          "rgba(17, 17, 17, .7)"
+        );
+      }
     } else {
       dots.forEach((dot, index) => {
         const deltaX = dot.baseX - pointer.x;
@@ -1242,10 +1352,12 @@ if (countdown) {
     context.textAlign = "center";
     context.textBaseline = "bottom";
     context.font = `700 ${labelFontSize}px "Open Sans", sans-serif`;
-    context.fillStyle = "#111";
+    context.fillStyle = activeMainVariant === "main-2" || activeMainVariant === "main-3"
+      ? "rgba(17, 17, 17, .58)"
+      : "#111";
     const labelTracking = Math.max(1, Math.min(1.8, displayWidth / 650));
     const activeLabelY = activeMainVariant === "main-2" || activeMainVariant === "main-3"
-      ? labelY - 10
+      ? labelY - 31
       : labelY;
     labels.forEach((label, index) => {
       drawTrackedLabel(label, activeCenters[index], activeLabelY, labelTracking);
@@ -1288,7 +1400,7 @@ const guestGallery = document.querySelector(".guest-gallery");
 
 if (guestGallery) {
   const guestCards = [...guestGallery.querySelectorAll("[data-guest-index]")];
-  const cardSpacing = 245;
+  const cardSpacing = 253;
   const totalStripWidth = guestCards.length * cardSpacing;
   let carouselScroll = 0;
   let targetCarouselScroll = 0;
@@ -1478,7 +1590,7 @@ if (submitPage) {
   const discardNotice = submitPage.querySelector("[data-discard-notice]");
   const discardNoticeTitle = submitPage.querySelector("[data-discard-notice-title]");
   const discardNoticeBody = submitPage.querySelector("[data-discard-notice-body]");
-  const googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
+  let googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
   const consentState = { event: false, privacy: false, international: false };
   const consentDocuments = {
     event: {
@@ -1538,21 +1650,6 @@ if (submitPage) {
     }
   }
 
-  function decodeGoogleCredential(credential) {
-    try {
-      const encodedPayload = credential.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-      const bytes = Uint8Array.from(window.atob(encodedPayload), (character) => character.charCodeAt(0));
-      const payload = JSON.parse(new TextDecoder().decode(bytes));
-      return {
-        email: payload.email,
-        name: payload.name || payload.given_name || payload.email,
-        picture: payload.picture || ""
-      };
-    } catch {
-      return null;
-    }
-  }
-
   function renderAccount(account) {
     const isAuthenticated = Boolean(account?.email);
     loginView.hidden = isAuthenticated;
@@ -1589,14 +1686,21 @@ if (submitPage) {
     googleSlot.replaceChildren();
     window.google.accounts.id.initialize({
       client_id: googleClientId,
-      callback: ({ credential }) => {
-        const account = decodeGoogleCredential(credential);
-        if (!account?.email) {
-          authStatus.textContent = "Google 계정 정보를 확인하지 못했습니다. 다시 시도해주세요.";
-          return;
+      callback: async ({ credential }) => {
+        authStatus.textContent = "로그인 정보를 확인하는 중입니다...";
+        try {
+          const response = await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: credential })
+          });
+          if (!response.ok) throw new Error(`session_failed_${response.status}`);
+          const { user } = await response.json();
+          authStatus.textContent = "";
+          setAccount(user);
+        } catch {
+          authStatus.textContent = "Google 로그인에 실패했습니다. 다시 시도해주세요.";
         }
-        authStatus.textContent = "";
-        setAccount(account);
       }
     });
     window.google.accounts.id.renderButton(googleSlot, {
@@ -2220,9 +2324,14 @@ if (submitPage) {
     resetValidationFeedback();
   }
 
-  function performSwitchAccount() {
+  async function performSwitchAccount() {
     clearApplicationDraft();
     window.google?.accounts?.id?.disableAutoSelect();
+    try {
+      await fetch("/api/auth/session", { method: "DELETE" });
+    } catch {
+      // 네트워크 오류가 나더라도 로컬 UI는 로그인 화면으로 전환한다.
+    }
     setAccount(null);
   }
 
@@ -2354,7 +2463,7 @@ if (submitPage) {
   });
   submitAnotherButton.addEventListener("click", startAnotherSubmission);
 
-  applicationForm.addEventListener("submit", (event) => {
+  applicationForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     hasSubmittedForm = true;
     syncCountryConsent(false);
@@ -2377,17 +2486,77 @@ if (submitPage) {
       return;
     }
 
-    formStatus.textContent = "모든 필수 항목을 확인했습니다.";
-    formStatus.classList.remove("is-error");
-    formStatus.classList.add("is-success");
-    showSubmissionSuccess();
+    const account = readStoredAccount();
+    if (!account?.email) {
+      formStatus.textContent = "로그인 정보가 만료되었습니다. 구글 계정으로 다시 로그인한 뒤 제출해주세요.";
+      formStatus.classList.add("is-error");
+      formStatus.classList.remove("is-success");
+      return;
+    }
+
+    formStatus.textContent = "제출 중입니다...";
+    formStatus.classList.remove("is-error", "is-success");
+    submitButton.disabled = true;
+
+    try {
+      const formData = new FormData(applicationForm);
+      formData.set("consent-event", String(consentState.event));
+      formData.set("consent-privacy", String(consentState.privacy));
+      formData.set("consent-international", String(consentState.international));
+
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        body: formData
+      });
+
+      if (response.status === 401) {
+        submitButton.disabled = false;
+        formStatus.textContent = "로그인이 만료되었습니다. 우측 상단에서 계정을 전환해 다시 로그인한 뒤 제출해주세요.";
+        formStatus.classList.add("is-error");
+        return;
+      }
+      if (!response.ok) throw new Error(`submit_failed_${response.status}`);
+
+      formStatus.textContent = "모든 필수 항목을 확인했습니다.";
+      formStatus.classList.remove("is-error");
+      formStatus.classList.add("is-success");
+      showSubmissionSuccess();
+    } catch {
+      submitButton.disabled = false;
+      formStatus.textContent = "제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      formStatus.classList.add("is-error");
+      formStatus.classList.remove("is-success");
+    }
   });
 
   const googleScript = document.querySelector("#google-identity-services");
   if (window.google?.accounts?.id) initializeGoogleSignIn();
   else googleScript?.addEventListener("load", initializeGoogleSignIn, { once: true });
 
-  renderAccount(readStoredAccount());
+  // meta 태그가 비어 있으면 서버 환경변수(GOOGLE_OAUTH_CLIENT_ID)에서 클라이언트 ID를 받아온다.
+  if (!googleClientId) {
+    fetch("/api/config")
+      .then((response) => response.json())
+      .then(({ googleClientId: configuredId }) => {
+        if (!configuredId) return;
+        googleClientId = configuredId;
+        initializeGoogleSignIn();
+      })
+      .catch(() => {});
+  }
+
+  fetch("/api/auth/session")
+    .then(async (response) => {
+      if (!response.ok) {
+        storeAccount(null);
+        renderAccount(null);
+        return;
+      }
+      const { user } = await response.json();
+      storeAccount(user);
+      renderAccount(user);
+    })
+    .catch(() => renderAccount(readStoredAccount()));
 }
 
 document.querySelectorAll("[data-demo-form]").forEach((form) => {
