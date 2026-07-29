@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=footer-links-language-v1-ready-cards-v1">
+  <link rel="stylesheet" href="site.css?v=eligibility-people-graphic-v1">
 </head>
 <body>
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -358,14 +358,13 @@
 
       <details class="details-fold event-details-overview" id="event-details" aria-labelledby="event-details-summary" open>
         <summary class="event-details-hero details-hero-summary shell" id="event-details-summary">
-          <p class="kicker">EVENT DETAILS</p>
           <div class="event-details-hero-grid">
             <div class="details-title-stack">
               <h1 id="apply-title">Event<br>Details</h1>
             </div>
             <div class="event-details-hero-copy details-hero-copy">
               <p class="event-details-tagline">From online warm-up<br>to the final stage</p>
-              <p class="event-details-lead">온라인 예선 접수부터 서울 현장 본선까지, 참가자가 알아야 할 공통 안내입니다.</p>
+              <p class="event-details-lead">온라인 예선을 거쳐 본선 무대에 오르기까지,<br>참가 신청부터 심사 방식과 팀 구성까지 대회의 모든 과정을 한눈에 확인하세요.</p>
             </div>
             <span class="details-fold-action">
               <span class="fold-state fold-state-closed">VIEW DETAILS</span>
@@ -375,20 +374,20 @@
           </div>
           <dl class="details-snapshot event-details-snapshot" aria-label="행사 핵심 정보">
             <div>
-              <dt>PARTICIPATION</dt>
-              <dd>예선 → 서울 본선</dd>
+              <dt>진행 방식</dt>
+              <dd class="snapshot-flow"><span>온라인 예선</span><span class="sr-only">에서</span><i class="snapshot-arrow" data-lucide="arrow-right" aria-hidden="true"></i><span>서울 현장 본선</span></dd>
             </div>
             <div>
-              <dt>TEAM</dt>
-              <dd>1—3인</dd>
+              <dt>팀 구성</dt>
+              <dd>팀당 1~3명</dd>
             </div>
             <div>
-              <dt>FINALISTS</dt>
-              <dd>40팀</dd>
+              <dt>본선 선발 규모</dt>
+              <dd>총 40팀</dd>
             </div>
             <div>
-              <dt>SCORING</dt>
-              <dd>5개 항목 · 100점</dd>
+              <dt>평가 방식</dt>
+              <dd class="snapshot-flow"><span>5개 항목</span><span class="sr-only">에서</span><i class="snapshot-arrow" data-lucide="arrow-right" aria-hidden="true"></i><span>총 100점</span></dd>
             </div>
           </dl>
         </summary>
@@ -399,26 +398,22 @@
               <div class="details-section-heading">
                 <p class="details-index">01</p>
                 <div>
-                  <p class="kicker">HOW TO JOIN</p>
                   <h2 id="participation-path-title">참가 방법</h2>
                 </div>
               </div>
               <div class="process-flow event-process-flow">
                 <article>
                   <div class="process-marker">01</div>
-                  <p class="process-label">ONLINE ENTRY</p>
-                  <h3>예선 접수 &amp;<br>예선 과제 제출</h3>
+                  <h3>온라인 예선 참여</h3>
                   <p>온라인 접수 기간에 참가 정보를 등록하고 플레이 가능한 예선 과제를 제출합니다.</p>
                 </article>
                 <article>
                   <div class="process-marker">02</div>
-                  <p class="process-label">FINALIST REVIEW</p>
                   <h3>본선 진출자 선정</h3>
                   <p>제출 작품을 공통 심사 기준으로 평가해 본선에 진출할 40팀을 선정합니다.</p>
                 </article>
                 <article>
                   <div class="process-marker">03</div>
-                  <p class="process-label">SEOUL, IN PERSON</p>
                   <h3>본선 참여</h3>
                   <p>선정된 팀은 서울 현장 행사에 참여해 게임을 발표하고 두 개의 트랙에 도전합니다.</p>
                   <small class="process-note">팀 단위로 신청하실 경우, 대표자 1인만 본선에 참여 가능합니다.</small>
@@ -430,14 +425,16 @@
               <div class="details-section-heading">
                 <p class="details-index">02</p>
                 <div>
-                  <p class="kicker">ELIGIBILITY</p>
                   <h2 id="eligibility-title">참가 가능 조건</h2>
                 </div>
               </div>
               <div class="eligibility-card">
-                <div class="eligibility-size"><strong>1—3</strong><span>PEOPLE</span></div>
+                <div class="eligibility-size" aria-label="개인 또는 최대 3명의 팀으로 참여 가능">
+                  <span class="eligibility-person eligibility-person-lead"><i data-lucide="user-round" aria-hidden="true"></i></span>
+                  <span class="eligibility-person"><i data-lucide="user-round" aria-hidden="true"></i></span>
+                  <span class="eligibility-person eligibility-person-accent"><i data-lucide="user-round" aria-hidden="true"></i></span>
+                </div>
                 <div>
-                  <p class="kicker">INDIVIDUAL OR TEAM</p>
                   <h3>개인 개발자 또는 팀</h3>
                   <p>1인 이상, 3인 이하의 개인 개발자 또는 팀으로 참가할 수 있습니다.</p>
                 </div>
@@ -448,7 +445,6 @@
               <div class="details-section-heading">
                 <p class="details-index">03</p>
                 <div>
-                  <p class="kicker">FINALISTS</p>
                   <h2 id="finalists-title">본선 진출자 조건</h2>
                   <p class="details-section-copy">아래 심사 기준으로 평가된 40팀이 본선에 진출합니다.</p>
                 </div>
@@ -489,7 +485,6 @@
 
       <details class="details-fold track-one" id="track-1" aria-labelledby="track1-summary">
         <summary class="details-hero details-hero-summary shell" id="track1-summary">
-          <p class="kicker">TRACK DETAILS</p>
           <div class="details-hero-grid">
             <div class="details-title-stack">
               <p class="details-track">TRACK 1 <span>ONLINE</span></p>
@@ -514,7 +509,6 @@
           <div class="details-section-heading">
             <p class="details-index">01</p>
             <div>
-              <p class="kicker">THE CHALLENGE</p>
               <h2 id="principles-title">무엇을 만들어야 하나요?</h2>
               <p class="details-section-copy">하단의 조건을 만족하는 게임을 '제출하기'란을 통해 제출해주세요.</p>
             </div>
@@ -542,26 +536,22 @@
           <div class="details-section-heading">
             <p class="details-index">02</p>
             <div>
-              <p class="kicker">HOW IT WORKS</p>
               <h2 id="process-title">Track 1 진행 방식</h2>
             </div>
           </div>
           <div class="process-flow">
             <article>
               <div class="process-marker">01</div>
-              <p class="process-label">ONLINE WARM-UP</p>
               <h3>프로토타입 제출</h3>
               <p>사전 챌린지를 통해 플레이 가능한 게임 프로토타입을 접수합니다.</p>
             </article>
             <article>
               <div class="process-marker">02</div>
-              <p class="process-label">FINALISTS</p>
               <h3>40개 작품 선정</h3>
               <p>선정된 40개 작품은 서울에서 열리는 오프라인 게임 해커톤에 진출합니다.</p>
             </article>
             <article>
               <div class="process-marker">03</div>
-              <p class="process-label">SEOUL, IN PERSON</p>
               <h3>서울 현장 결선</h3>
               <p>본선에서는 팀 대표가 게임을 직접 시연하고 작품을 발표합니다.</p>
             </article>
@@ -572,7 +562,6 @@
           <div class="details-section-heading">
             <p class="details-index">03</p>
             <div>
-              <p class="kicker">SUBMISSION GUIDE</p>
               <h2 id="rules-title">제출 안내</h2>
             </div>
           </div>
@@ -653,7 +642,6 @@
 
       <details class="details-fold track-two" id="track-2" aria-labelledby="track2-summary">
         <summary class="details-hero details-hero-summary shell" id="track2-summary">
-          <p class="kicker">TRACK DETAILS</p>
           <div class="details-hero-grid">
             <div class="details-title-stack">
               <p class="details-track">TRACK 2 <span>ON-SITE</span></p>
@@ -678,7 +666,6 @@
             <div class="details-section-heading">
               <p class="details-index">01</p>
               <div>
-                <p class="kicker">THE CHALLENGE</p>
                 <h2 id="track2-principles-title">무엇을 만들어야 하나요?</h2>
                 <p class="details-section-copy">행사 당일 공개되는 주제에 맞춰 Codex로 플레이 가능한 미니게임을 완성해 주세요.</p>
               </div>
@@ -706,26 +693,22 @@
             <div class="details-section-heading">
               <p class="details-index">02</p>
               <div>
-                <p class="kicker">HOW IT WORKS</p>
                 <h2 id="track2-process-title">Track 2 진행 방식</h2>
               </div>
             </div>
             <div class="process-flow">
               <article>
                 <div class="process-marker">01</div>
-                <p class="process-label">FINALISTS ONLY</p>
                 <h3>Track 1 본선팀 참가</h3>
                 <p>Mini Game Party는 Track 1 본선에 진출한 팀만 참여할 수 있습니다.</p>
               </article>
               <article>
                 <div class="process-marker">02</div>
-                <p class="process-label">THEME REVEAL</p>
                 <h3>현장 주제 공개</h3>
                 <p>행사 당일 주제를 확인한 뒤 Codex와 함께 바로 플레이 가능한 게임을 개발합니다.</p>
               </article>
               <article>
                 <div class="process-marker">03</div>
-                <p class="process-label">PLAY &amp; VOTE</p>
                 <h3>게임 공개 및 인기 투표</h3>
                 <p>결과물을 행사 사이트에 공개하며 현장 인기 투표가 수상 결과에 반영됩니다.</p>
               </article>
@@ -736,7 +719,6 @@
             <div class="details-section-heading">
               <p class="details-index">03</p>
               <div>
-                <p class="kicker">SUBMISSION GUIDE</p>
                 <h2 id="track2-rules-title">Track 2 제출 안내</h2>
               </div>
             </div>
@@ -813,7 +795,6 @@
       <section class="submit-application" data-submit-application hidden>
         <header class="application-header shell">
           <img class="application-wordmark" src="assets/openai-wordmark.svg" alt="OpenAI">
-          <p class="kicker">FIRST CHALLENGE · ONLINE WARM-UP</p>
           <h1 data-application-title tabindex="-1">GAME HACKATHON<br>IN SEOUL <span>신청서</span></h1>
           <div class="application-intro">
             <strong>First Challenge<br>Online warm-up 참가 신청을 위한 신청서입니다.</strong>
@@ -840,7 +821,6 @@
               <div class="application-section-title">
                 <span>01</span>
                 <div>
-                  <p class="kicker">BEFORE YOU APPLY</p>
                   <h2 id="consent-title">신청 전 확인</h2>
                 </div>
               </div>
@@ -920,8 +900,7 @@
               <div class="application-section-title">
                 <span>02</span>
                 <div>
-                  <p class="kicker">APPLICATION FORM</p>
-                  <h2 id="applicant-title">GAME HACKATHON IN SEOUL 참가 신청</h2>
+                  <h2 id="applicant-title">GAME HACKATHON 참가 신청</h2>
                   <p>대표 신청자의 인적 사항을 기재해주세요.</p>
                 </div>
               </div>
@@ -961,7 +940,6 @@
               <div class="application-section-title">
                 <span>03</span>
                 <div>
-                  <p class="kicker">PROJECT SUBMISSION</p>
                   <h2 id="project-title">프로젝트 제출</h2>
                   <p>게임 심사에 필요한 플레이 정보와 프로젝트 자료를 제출해주세요.</p>
                 </div>
@@ -1043,7 +1021,7 @@
                 </fieldset>
 
                 <section class="project-field main-submission" aria-labelledby="game-link-label">
-                  <div class="submission-type">MAIN SUBMISSION</div>
+                  <div class="submission-type">필수 제출</div>
                   <label>
                     <span class="project-label" id="game-link-label">플레이 가능한 게임 링크<sup>*</sup></span>
                     <input name="playable-game-link" type="url" inputmode="url" placeholder="https://" required>
@@ -1066,7 +1044,6 @@
               <div class="application-section-title">
                 <span>04</span>
                 <div>
-                  <p class="kicker">BONUS SUBMISSION</p>
                   <h2 id="bonus-title">보너스 제출</h2>
                   <p>플레이 경험과 제작 과정을 더 잘 보여줄 수 있는 선택 제출 항목입니다.</p>
                 </div>
