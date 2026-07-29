@@ -813,7 +813,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .guest-photo {
   display: block;
   width: 100%;
-  height: clamp(250px, 24vw, 320px);
+  height: calc(clamp(250px, 24vw, 320px) - 20px);
   object-fit: cover;
   object-position: center 22%;
 }
@@ -1553,7 +1553,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   .guests-intro { margin-top: -24px; margin-bottom: 48px; }
   .guest-gallery { height: 550px; }
   .guest-list article { width: min(76vw, 300px); }
-  .guest-photo { height: 330px; }
+  .guest-photo { height: 310px; }
   .guest-copy { min-height: 170px; padding: 18px 20px 22px; }
   .guest-list h3 { font-size: 20px; }
   .guest-gallery-control { top: 42%; width: 42px; height: 42px; }
@@ -4797,9 +4797,11 @@ body.terms-modal-open { overflow: hidden; }
 
 body[data-main-variant="main-2"] .dot-countdown {
   cursor: default;
+  margin-bottom: 78px;
 }
 body[data-main-variant="main-3"] .dot-countdown {
   cursor: default;
+  margin-bottom: 78px;
 }
 body[data-main-variant="main-2"] .countdown-glass-layer,
 body[data-main-variant="main-3"] .countdown-glass-layer {
@@ -4815,6 +4817,13 @@ body[data-main-variant="main-3"] .countdown-glass-layer {
 
   #home .hero-title-main {
     margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  body[data-main-variant="main-2"] .dot-countdown,
+  body[data-main-variant="main-3"] .dot-countdown {
+    margin-bottom: 44px;
   }
 }
 
