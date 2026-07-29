@@ -9,8 +9,8 @@
   <title>OpenAI Game Hackathon in Seoul</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=main-variants-v13">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css?v=hero-refine-v28">
 </head>
 <body data-main-variant="main-1">
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
@@ -37,17 +37,17 @@
     <section class="page active" id="home" data-page>
       <div class="hero shell">
         <canvas class="hero-aurora" data-hero-fluid aria-hidden="true"></canvas>
-        <div class="hero-symbol" aria-hidden="true">
-          <canvas class="hero-symbol-fluid" data-hero-symbol-fluid></canvas>
-          <img src="assets/openai-blossom.svg" alt="">
+        <div class="hero-heading">
+          <div class="hero-symbol" aria-hidden="true">
+            <canvas class="hero-symbol-fluid" data-hero-symbol-fluid></canvas>
+            <canvas class="hero-symbol-highlight" data-hero-symbol-highlight></canvas>
+            <img src="assets/openai-blossom.svg" alt="">
+          </div>
+          <h1>
+            <span class="hero-title-main">GAME HACKATHON</span>
+            <span class="hero-title-location">IN SEOUL</span>
+          </h1>
         </div>
-        <div class="partner-image">
-          <img src="assets/OAI_OpenAI_Wordmark_Black.svg" alt="OpenAI">
-        </div>
-        <h1>
-          <span class="hero-title-main">GAME HACKATHON</span>
-          <span class="hero-title-location">IN SEOUL</span>
-        </h1>
         <p class="hero-date">26.07.31 - 08.31</p>
         <div class="chat-area">
           <div class="dot-countdown" data-countdown data-target="2026-08-17T23:59:59+09:00" role="timer" aria-label="온라인 챌린지 접수 마감까지 남은 시간">
@@ -118,7 +118,7 @@
           <h2>Online Warm-up Challenge</h2>
         </div>
         <div class="schedule-body schedule-body-compact">
-          <aside>2026<br><strong>JUL. 31 - AUG. 28</strong></aside>
+          <aside><span class="schedule-year">2026</span><br><strong>JUL. 31 - AUG. 28</strong></aside>
           <div class="schedule-list">
             <article class="has-action">
               <time datetime="2026-07-31">07/31 — 08/17</time>
@@ -154,7 +154,7 @@
           <em>08/31 (Mon)</em>
         </div>
         <div class="schedule-body">
-          <aside>ONE DAY<br><strong>OFFLINE EVENT</strong><br><strong class="schedule-date">AUG. 31</strong></aside>
+          <aside><strong class="schedule-event-label">OFFLINE EVENT</strong><br><span class="schedule-day-label">ONE DAY</span><br><strong class="schedule-date">AUG. 31</strong></aside>
           <div class="schedule-list">
             <article><time datetime="09:00">09:00</time><div><h3>입장 시작</h3></div></article>
             <article>
@@ -201,7 +201,9 @@
           <article>
             <p class="label">TRACK 2 WINNERS</p>
             <h3>ChatGPT Pro 1년 구독권</h3>
-            <p class="reward-big">3 teams</p>
+            <ul class="reward-track-two-list">
+              <li>3 teams</li>
+            </ul>
           </article>
         </div>
         <ul class="reward-notes">
@@ -1380,6 +1382,6 @@
 
   <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=main-variants-v13"></script>
+  <script src="app.js?v=hero-refine-v28"></script>
 </body>
 </html>
