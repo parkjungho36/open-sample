@@ -3686,6 +3686,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   min-width: 0;
 }
 .application-form-grid label > span,
+.phone-field > label,
 .team-size legend,
 .attendance-availability legend {
   display: block;
@@ -3726,6 +3727,130 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
   font-size: 10px;
   line-height: 1.4;
 }
+.phone-field {
+  --iti-border-color: #d5d5d5;
+  --iti-country-selector-bg: #fff;
+  --iti-hover-color: #f2f2f2;
+  position: relative;
+}
+.phone-field--emergency {
+  margin-top: 44px;
+}
+.phone-field > .iti {
+  width: 100%;
+  display: block;
+}
+.phone-field .iti__tel-input {
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border: 0;
+  border-bottom: 1px solid #aaa;
+  border-radius: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font-family: inherit;
+  font-size: 17px;
+}
+.phone-field .iti__tel-input:focus {
+  border-color: var(--ink);
+}
+.phone-field .iti__country-container {
+  font-size: 13px;
+}
+.phone-field .iti__selected-country {
+  margin-right: 12px;
+  padding-right: 16px;
+  border-right: 1px solid #dedede;
+}
+.phone-field .iti__selected-country-primary {
+  gap: 6px;
+  padding-left: 2px;
+  padding-right: 6px;
+}
+.phone-field .iti__selected-dial-code {
+  margin-left: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.phone-field .iti__country-selector {
+  min-width: min(420px, calc(100vw - 40px));
+  margin-top: 8px;
+  overflow: hidden;
+  border-color: #cfcfcf;
+  border-radius: 4px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .16);
+}
+.phone-field .iti__search-input-wrapper {
+  min-height: 48px;
+  background: #fff;
+}
+.phone-field .iti__search-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 42px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #d5d5d5 !important;
+  border-radius: 0;
+  color: var(--ink);
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  outline: 0;
+}
+.phone-field .iti__search-input:focus {
+  border-bottom-color: var(--ink) !important;
+}
+.phone-field .iti__search-icon {
+  left: 14px;
+}
+.phone-field .iti__search-clear {
+  right: 12px;
+}
+.phone-field .iti__country {
+  min-height: 42px;
+  padding-right: 14px;
+  padding-left: 14px;
+  font-size: 13px;
+}
+.phone-updates-consent {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 12px;
+  padding: 12px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border: 0;
+  border-bottom: 1px solid #e2e2e2;
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.phone-updates-consent:hover {
+  border-color: #bdbdbd;
+  background: #fafafa;
+}
+.phone-updates-consent strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.phone-updates-consent .consent-indicator {
+  width: 24px;
+  height: 24px;
+}
+.phone-updates-consent[aria-pressed="true"] .consent-indicator {
+  border-color: var(--ink);
+  color: #fff;
+  background: var(--ink);
+}
 .field-error {
   margin: 9px 0 0;
   color: #b84e2b;
@@ -3736,6 +3861,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .field-error[hidden] { display: none; }
 .application-form label.has-error input,
 .application-form label.has-error textarea,
+.application-form .phone-field.has-error .iti__tel-input,
 .application-form .platform-other-input.has-error input {
   border-color: #d56f4b;
 }
@@ -3895,7 +4021,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .thumbnail-empty[hidden] { display: none; }
 .thumbnail-preview img {
   width: 190px;
-  aspect-ratio: 1;
+  aspect-ratio: 16 / 9;
   display: block;
   object-fit: cover;
   border-radius: .25rem;
@@ -4664,6 +4790,15 @@ body.terms-modal-open { overflow: hidden; }
   }
   .application-form-grid { grid-template-columns: 1fr; }
   .field-wide { grid-column: auto; }
+  .phone-field .iti__country-selector {
+    min-width: min(360px, calc(100vw - 40px));
+  }
+  .phone-updates-consent {
+    align-items: flex-start;
+  }
+  .phone-updates-consent .consent-indicator {
+    margin-top: 2px;
+  }
   .attendance-options { grid-template-columns: 1fr; }
   .project-field-heading {
     flex-direction: column;
