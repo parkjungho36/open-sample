@@ -1693,7 +1693,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 .details-page {
   --details-accent: #31b8c7;
   --details-summary-open: var(--ink);
-  padding-bottom: clamp(32px, 3vw, 48px);
+  padding-bottom: 0;
   scroll-margin-top: var(--nav-height);
 }
 .details-anchor-nav {
@@ -1957,7 +1957,7 @@ h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.055em; }
 }
 .details-fold[open] > .details-fold-body { border-top: 0; }
 .track-two[open] > .details-fold-body {
-  padding-bottom: clamp(48px, 5vw, 72px);
+  padding-bottom: clamp(80px, 8vw, 120px);
 }
 .details-fold-body .details-content > section:first-child { border-top: 0; }
 #track1-submission-guide {
