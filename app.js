@@ -2812,7 +2812,7 @@ document.querySelectorAll("[data-criterion]").forEach((item) => {
 
 const updateCriterionHighlight = (key) => {
   const group = criterionGroups.get(key) || [];
-  const isActive = group.some((item) => item.matches(":hover") || item.contains(document.activeElement));
+  const isActive = group.some((item) => item.matches(":hover"));
   group.forEach((item) => item.classList.toggle("is-criterion-active", isActive));
 };
 
