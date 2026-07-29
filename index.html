@@ -10,20 +10,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="site.css?v=eligibility-people-graphic-v1">
+  <link rel="stylesheet" href="site.css?v=main-variants-v7">
 </head>
-<body>
+<body data-main-variant="main-1">
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
 
   <header class="nav">
     <div class="nav-inner">
-      <a class="brand-mark" href="#home" aria-label="OpenAI Game Hackathon 홈">
+      <a class="brand-mark" href="#main-1" aria-label="OpenAI Game Hackathon 홈">
         <img src="assets/openai-wordmark.svg" alt="OpenAI">
       </a>
       <nav aria-label="주요 메뉴">
-        <a href="#apply" data-route="apply">상세정보</a>
-        <a href="#submit" data-route="submit">제출하기</a>
-        <a href="#gallery" data-route="gallery">작품보기</a>
+        <a class="main-variant-link" href="#main-1" data-route="main-1">메인1</a>
+        <a class="main-variant-link" href="#main-2" data-route="main-2">메인2</a>
+        <a class="main-variant-link" href="#main-3" data-route="main-3">메인3</a>
+        <span class="nav-divider" aria-hidden="true"></span>
+        <a class="primary-route-link" href="#apply" data-route="apply">상세정보</a>
+        <a class="primary-route-link" href="#submit" data-route="submit">제출하기</a>
+        <a class="primary-route-link" href="#gallery" data-route="gallery">작품보기</a>
       </nav>
       <a class="nav-cta" href="#submit">참여하기</a>
     </div>
@@ -1358,6 +1362,6 @@
 
   <script id="google-identity-services" src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="app.js?v=footer-links-language-v1"></script>
+  <script src="app.js?v=main-variants-v7"></script>
 </body>
 </html>

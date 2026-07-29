@@ -1,8 +1,12 @@
 const pages = [...document.querySelectorAll("[data-page]")];
 const routeLinks = [...document.querySelectorAll("[data-route]")];
 const validRoutes = new Set(pages.map((page) => page.id));
+const mainVariantRoutes = new Set(["main-1", "main-2", "main-3"]);
 const siteHeader = document.querySelector(".nav");
+const brandMark = document.querySelector(".brand-mark");
+const homePage = document.querySelector("#home");
 let activeRouteId = pages.find((page) => page.classList.contains("active"))?.id || "home";
+let activeMainVariant = document.body.dataset.mainVariant || "main-1";
 let routeLeaveGuard = null;
 
 window.lucide?.createIcons();
@@ -25,7 +29,6 @@ footerLanguageSelect?.addEventListener("change", () => {
 
 function syncHeaderTheme() {
   const heroSection = document.querySelector(".hero");
-  const homePage = document.querySelector("#home");
   if (!siteHeader || !heroSection || !homePage) return;
   const heroAtTop = homePage.classList.contains("active") && window.scrollY <= 8;
   siteHeader.classList.toggle("is-hero", heroAtTop);
@@ -33,10 +36,20 @@ function syncHeaderTheme() {
 }
 
 function route() {
-  const requestedHash = location.hash.slice(1) || "home";
+  const requestedHash = location.hash.slice(1) || "main-1";
   const [requestedRoute, requestedDetailsTarget] = requestedHash.split(":");
-  const normalizedRoute = requestedRoute === "info" ? "home" : requestedRoute;
+  const requestedMainVariant = mainVariantRoutes.has(requestedRoute) ? requestedRoute : null;
+  const normalizedRoute = (requestedMainVariant || requestedRoute === "info")
+    ? "home"
+    : requestedRoute;
   const routeId = validRoutes.has(normalizedRoute) ? normalizedRoute : "home";
+
+  if (requestedMainVariant) activeMainVariant = requestedMainVariant;
+  else if (routeId === "home") activeMainVariant = "main-1";
+
+  document.body.dataset.mainVariant = activeMainVariant;
+  if (homePage) homePage.dataset.mainVariant = activeMainVariant;
+  if (brandMark) brandMark.href = `#${activeMainVariant}`;
 
   if (
     routeId !== activeRouteId
@@ -53,12 +66,14 @@ function route() {
   });
 
   routeLinks.forEach((link) => {
-    const isActive = link.dataset.route === routeId;
+    const isActive = link.dataset.route === (routeId === "home" ? activeMainVariant : routeId);
     if (isActive) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
 
-  if (requestedRoute !== routeId && requestedRoute !== "info") {
+  if (!location.hash) {
+    history.replaceState(null, "", `#${activeMainVariant}`);
+  } else if (requestedRoute !== routeId && requestedRoute !== "info" && !requestedMainVariant) {
     history.replaceState(null, "", `#${routeId}`);
   }
 
@@ -709,12 +724,16 @@ if (countdown) {
   let displayHeight = 0;
   let dots = [];
   let labelCenters = [];
+  let main2Centers = [];
   let labelY = 0;
   let labelFontSize = 12;
+  let countdownFontSize = 44;
+  let numberCenterY = 0;
   let maskDirty = true;
   let countdownFrame = 0;
   let countdownLastFrame = 0;
   let countdownVisible = true;
+  let renderedMainVariant = activeMainVariant;
 
   function dotRandom(column, row, salt) {
     let value = Math.imul(column + 1, 0x9e3779b1)
@@ -790,20 +809,20 @@ if (countdown) {
     const glassBottom = Math.max(3, labelY - labelFontSize - 15);
     const glassHeight = Math.min(200, Math.max(1, glassBottom - 2));
     const glassTop = Math.max(2, glassBottom - glassHeight);
-    const numberCenterY = glassTop + glassHeight / 2;
+    numberCenterY = glassTop + glassHeight / 2;
     const numberHeight = glassBottom;
-    let fontSize = Math.max(44, glassHeight * .78);
+    countdownFontSize = Math.max(44, glassHeight * .78);
 
     maskCanvas.width = Math.max(1, Math.ceil(displayWidth));
     maskCanvas.height = Math.max(1, Math.ceil(displayHeight));
     maskContext.clearRect(0, 0, displayWidth, displayHeight);
     maskContext.textAlign = "center";
     maskContext.textBaseline = "middle";
-    maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+    maskContext.font = `700 ${countdownFontSize}px "Open Sans", Arial, sans-serif`;
 
-    while (maskContext.measureText(displayValue).width > displayWidth - 28 && fontSize > 28) {
-      fontSize -= 2;
-      maskContext.font = `700 ${fontSize}px "Open Sans", Arial, sans-serif`;
+    while (maskContext.measureText(displayValue).width > displayWidth - 28 && countdownFontSize > 28) {
+      countdownFontSize -= 2;
+      maskContext.font = `700 ${countdownFontSize}px "Open Sans", Arial, sans-serif`;
     }
 
     maskContext.fillStyle = "#000";
@@ -853,7 +872,7 @@ if (countdown) {
       groupCursor += width + (index < groupWidths.length - 1 ? separatorWidth : 0);
       return center;
     });
-    glassCards.forEach((card, index) => {
+    const glassWidths = glassCards.map((card, index) => {
       const previousCenter = labelCenters[index - 1];
       const nextCenter = labelCenters[index + 1];
       const neighboringDistance = Math.min(
@@ -862,13 +881,25 @@ if (countdown) {
       );
       const availableWidth = Number.isFinite(neighboringDistance)
         ? neighboringDistance - Math.max(12, separatorWidth * .28)
-        : groupWidths[index] + fontSize * .42;
-      const desiredWidth = groupWidths[index] + Math.max(28, fontSize * .42);
-      const glassWidth = Math.max(groupWidths[index] + 16, Math.min(desiredWidth, availableWidth));
+        : groupWidths[index] + countdownFontSize * .42;
+      const desiredWidth = groupWidths[index] + Math.max(28, countdownFontSize * .42);
+      return Math.max(groupWidths[index] + 16, Math.min(desiredWidth, availableWidth));
+    });
+    const main2Gap = Math.max(14, Math.min(38, displayWidth * .034));
+    const main2TotalWidth = glassWidths.reduce((sum, width) => sum + width, 0)
+      + main2Gap * Math.max(0, glassWidths.length - 1);
+    let main2Cursor = (displayWidth - main2TotalWidth) / 2;
+    main2Centers = glassWidths.map((width, index) => {
+      const center = main2Cursor + width / 2;
+      main2Cursor += width + (index < glassWidths.length - 1 ? main2Gap : 0);
+      return center;
+    });
+    const cardCenters = activeMainVariant === "main-2" ? main2Centers : labelCenters;
 
-      card.style.left = `${labelCenters[index]}px`;
+    glassCards.forEach((card, index) => {
+      card.style.left = `${cardCenters[index]}px`;
       card.style.top = `${glassTop}px`;
-      card.style.width = `${glassWidth}px`;
+      card.style.width = `${glassWidths[index]}px`;
       card.style.height = `${glassHeight}px`;
       card.classList.add("is-ready");
     });
@@ -883,28 +914,78 @@ if (countdown) {
       return;
     }
     countdownLastFrame = time;
+    if (renderedMainVariant !== activeMainVariant) {
+      renderedMainVariant = activeMainVariant;
+      maskDirty = true;
+    }
     if (maskDirty) rebuildDotMask();
     context.clearRect(0, 0, displayWidth, displayHeight);
+    const activeCenters = activeMainVariant === "main-2" ? main2Centers : labelCenters;
 
-    dots.forEach((dot, index) => {
-      const deltaX = dot.baseX - pointer.x;
-      const deltaY = dot.baseY - pointer.y;
-      const distance = Math.max(1, Math.hypot(deltaX, deltaY));
-      const proximity = pointer.active ? Math.max(0, 1 - distance / 105) : 0;
-      const displacement = proximity * proximity * 24;
-      const targetX = dot.baseX + (deltaX / distance) * displacement;
-      const targetY = dot.baseY + (deltaY / distance) * displacement;
-      const easing = reducedMotion ? 1 : .16;
-      dot.x += (targetX - dot.x) * easing;
-      dot.y += (targetY - dot.y) * easing;
-      const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
-      const radius = dot.radius * (1 + pulse);
+    if (activeMainVariant === "main-2") {
+      const main2FontSize = Math.max(24, countdownFontSize - 12);
+      const main2Groups = displayValue.split(":").map((group) => group.trim());
 
-      context.beginPath();
-      context.arc(dot.x, dot.y, Math.max(1.2, radius), 0, Math.PI * 2);
-      context.fillStyle = dot.color;
-      context.fill();
-    });
+      context.textBaseline = "middle";
+      context.font = `600 ${main2FontSize}px "Open Sans", Arial, sans-serif`;
+      context.fillStyle = "#111";
+      main2Groups.forEach((group, index) => {
+        drawTrackedLabel(group, activeCenters[index], numberCenterY, -4);
+      });
+    } else {
+      dots.forEach((dot, index) => {
+        const deltaX = dot.baseX - pointer.x;
+        const deltaY = dot.baseY - pointer.y;
+        const distance = Math.max(1, Math.hypot(deltaX, deltaY));
+        const proximity = pointer.active ? Math.max(0, 1 - distance / 105) : 0;
+        const displacement = proximity * proximity * 24;
+        const targetX = dot.baseX + (deltaX / distance) * displacement;
+        const targetY = dot.baseY + (deltaY / distance) * displacement;
+        const easing = reducedMotion ? 1 : .16;
+        dot.x += (targetX - dot.x) * easing;
+        dot.y += (targetY - dot.y) * easing;
+        const pulse = reducedMotion ? 0 : Math.sin(time * .0022 + index * .17) * .06;
+        const radius = Math.max(1.2, dot.radius * (1 + pulse));
+
+        if (activeMainVariant === "main-1") {
+          const beadRadius = radius * 1.18;
+          context.beginPath();
+          context.arc(
+            dot.x + beadRadius * .22,
+            dot.y + beadRadius * .3,
+            beadRadius * 1.06,
+            0,
+            Math.PI * 2
+          );
+          context.fillStyle = "rgba(23, 59, 99, .28)";
+          context.fill();
+
+          context.beginPath();
+          context.arc(dot.x, dot.y, beadRadius, 0, Math.PI * 2);
+          context.fillStyle = dot.color;
+          context.fill();
+          context.lineWidth = Math.max(.35, beadRadius * .12);
+          context.strokeStyle = "rgba(255, 255, 255, .52)";
+          context.stroke();
+
+          context.beginPath();
+          context.arc(
+            dot.x - beadRadius * .3,
+            dot.y - beadRadius * .34,
+            Math.max(.4, beadRadius * .25),
+            0,
+            Math.PI * 2
+          );
+          context.fillStyle = "rgba(255, 255, 255, .82)";
+          context.fill();
+        } else {
+          context.beginPath();
+          context.arc(dot.x, dot.y, radius, 0, Math.PI * 2);
+          context.fillStyle = dot.color;
+          context.fill();
+        }
+      });
+    }
 
     context.textAlign = "center";
     context.textBaseline = "bottom";
@@ -912,7 +993,7 @@ if (countdown) {
     context.fillStyle = "#111";
     const labelTracking = Math.max(1, Math.min(1.8, displayWidth / 650));
     labels.forEach((label, index) => {
-      drawTrackedLabel(label, labelCenters[index], labelY, labelTracking);
+      drawTrackedLabel(label, activeCenters[index], labelY, labelTracking);
     });
 
     if (!reducedMotion) countdownFrame = window.requestAnimationFrame(drawCountdown);
@@ -2220,12 +2301,12 @@ document.querySelectorAll("[data-home-target]").forEach((link) => {
       });
     });
 
-    if (location.hash === "#home" || !location.hash) {
+    if (activeRouteId === "home") {
       scrollToTarget();
       return;
     }
 
     window.addEventListener("hashchange", scrollToTarget, { once: true });
-    location.hash = "home";
+    location.hash = activeMainVariant;
   });
 });
