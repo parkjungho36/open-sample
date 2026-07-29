@@ -1562,6 +1562,12 @@ if (submitPage) {
   const countryCancel = submitPage.querySelector("[data-country-cancel]");
   const countryConfirm = submitPage.querySelector("[data-country-confirm]");
   const internationalConsent = submitPage.querySelector('[data-consent-trigger="international"]');
+  const updatesConsent = submitPage.querySelector('[data-consent-trigger="updates"]');
+  const phoneField = submitPage.querySelector("[data-phone-field]");
+  const phoneInput = submitPage.querySelector("[data-phone-input]");
+  const phoneE164 = submitPage.querySelector("[data-phone-e164]");
+  const phoneCountry = submitPage.querySelector("[data-phone-country]");
+  const phoneError = submitPage.querySelector("[data-phone-error]");
   const thumbnailInput = submitPage.querySelector("[data-thumbnail-input]");
   const thumbnailEmpty = submitPage.querySelector("[data-thumbnail-empty]");
   const thumbnailPreview = submitPage.querySelector("[data-thumbnail-preview]");
@@ -1591,7 +1597,7 @@ if (submitPage) {
   const discardNoticeTitle = submitPage.querySelector("[data-discard-notice-title]");
   const discardNoticeBody = submitPage.querySelector("[data-discard-notice-body]");
   let googleClientId = document.querySelector('meta[name="google-oauth-client-id"]')?.content.trim();
-  const consentState = { event: false, privacy: false, international: false };
+  const consentState = { event: false, privacy: false, international: false, updates: false };
   const consentDocuments = {
     event: {
       title: "OpenAI Game Hackathon in Seoul 참가 약관",
@@ -1604,6 +1610,10 @@ if (submitPage) {
     international: {
       title: "개인정보 국외 이전 동의서",
       template: document.querySelector("#international-transfer-terms-content")
+    },
+    updates: {
+      title: "행사 관련 업데이트 수신 동의",
+      template: document.querySelector("#event-updates-terms-content")
     }
   };
   const countryCodes = `
@@ -1631,6 +1641,11 @@ if (submitPage) {
   let formIsDirty = false;
   let pendingDiscardAction = null;
   let allowNextRouteChange = false;
+  let phoneInstance = null;
+  let phoneUtils = null;
+  let phoneCountryWasManuallySelected = false;
+  let isSyncingPhoneCountry = false;
+  let isFormattingPhoneInput = false;
   const touchedValidationKeys = new Set();
 
   function readStoredAccount() {
@@ -1797,6 +1812,116 @@ if (submitPage) {
     countryTrigger.classList.toggle("is-selected", Boolean(country));
   }
 
+  function getSelectedPhoneCountry() {
+    return phoneInstance?.getSelectedCountry?.()
+      || phoneInstance?.getSelectedCountryData?.()
+      || null;
+  }
+
+  function syncPhoneHiddenValues() {
+    const selectedCountry = getSelectedPhoneCountry();
+    const enteredNumber = phoneInput.value.trim();
+    phoneCountry.value = selectedCountry?.iso2?.toUpperCase() || "";
+    phoneE164.value = enteredNumber && phoneInstance?.getNumber
+      ? phoneInstance.getNumber()
+      : "";
+  }
+
+  function formatPhoneInputAsYouType() {
+    if (!phoneUtils || isFormattingPhoneInput) return;
+    const selectedCountry = getSelectedPhoneCountry();
+    const digits = phoneInput.value.replace(/\D/g, "");
+    if (!selectedCountry?.iso2 || !digits) return;
+
+    const formatted = phoneUtils.formatNumberAsYouType(digits, selectedCountry.iso2);
+    if (!formatted || formatted === phoneInput.value) return;
+
+    isFormattingPhoneInput = true;
+    phoneInput.value = formatted;
+    phoneInput.setSelectionRange(formatted.length, formatted.length);
+    isFormattingPhoneInput = false;
+  }
+
+  function setPhoneCountry(countryCode, force = false) {
+    if (!countryCode || !phoneInstance || (!force && phoneCountryWasManuallySelected)) return;
+
+    isSyncingPhoneCountry = true;
+    const normalizedCode = countryCode.toLowerCase();
+    if (phoneInstance.setSelectedCountry) phoneInstance.setSelectedCountry(normalizedCode);
+    else phoneInstance.setCountry?.(normalizedCode);
+    syncPhoneHiddenValues();
+    window.queueMicrotask(() => {
+      isSyncingPhoneCountry = false;
+    });
+  }
+
+  function initializePhoneInput() {
+    if (!phoneInput || !window.intlTelInput) return;
+
+    const phoneUtilsLoader = import("https://cdn.jsdelivr.net/npm/intl-tel-input@29.0.3/dist/js/utils.js")
+      .then((utilsModule) => {
+        phoneUtils = utilsModule.default || utilsModule;
+        return utilsModule;
+      });
+
+    phoneInstance = window.intlTelInput(phoneInput, {
+      initialCountry: "kr",
+      countryNameLocale: "ko",
+      countrySearch: true,
+      formatAsYouType: true,
+      separateDialCode: true,
+      strictMode: true,
+      uiTranslations: {
+        selectedCountryAriaLabel: "전화번호 국가 변경: 현재 ${countryName} (${dialCode})",
+        noCountrySelected: "전화번호 국가 선택",
+        countryListAriaLabel: "전화번호 국가 목록",
+        searchPlaceholder: "국가 또는 국가 코드 검색",
+        clearSearchAriaLabel: "검색어 지우기",
+        searchEmptyState: "검색 결과가 없습니다.",
+        searchSummaryAria(count) {
+          return count
+            ? `${count}개 국가가 검색되었습니다.`
+            : "검색 결과가 없습니다.";
+        }
+      },
+      loadUtils: () => phoneUtilsLoader
+    });
+
+    phoneInput.addEventListener("keydown", (event) => {
+      if (
+        event.key.length === 1
+        && !event.ctrlKey
+        && !event.metaKey
+        && !event.altKey
+        && !/\d/.test(event.key)
+      ) {
+        event.preventDefault();
+      }
+    });
+
+    phoneInput.addEventListener("input", () => {
+      formatPhoneInputAsYouType();
+      syncPhoneHiddenValues();
+    });
+    phoneInput.addEventListener("countrychange", () => {
+      if (!isSyncingPhoneCountry) phoneCountryWasManuallySelected = true;
+      syncPhoneHiddenValues();
+      if (touchedValidationKeys.has("applicant-phone") || hasSubmittedForm) {
+        refreshValidationRule("applicant-phone", true);
+      }
+    });
+
+    phoneInstance.promise?.then(() => {
+      formatPhoneInputAsYouType();
+      syncPhoneHiddenValues();
+      if (touchedValidationKeys.has("applicant-phone") || hasSubmittedForm) {
+        refreshValidationRule("applicant-phone", true);
+      }
+    }).catch(() => {
+      syncPhoneHiddenValues();
+    });
+  }
+
   function syncCountryConsent(requireValidSelection = false) {
     const countryCode = countryInput.value;
     const countryChanged = countryCode !== selectedCountryCode;
@@ -1844,6 +1969,7 @@ if (submitPage) {
     countryInput.value = pendingCountryCode;
     renderCountrySelection(pendingCountryCode);
     syncCountryConsent(false);
+    setPhoneCountry(pendingCountryCode);
     if (countryChanged) formIsDirty = true;
     touchedValidationKeys.add("representative-country");
     refreshValidationRule("representative-country", true);
@@ -2044,6 +2170,24 @@ if (submitPage) {
       inputRule("applicant-name", () => {
         return field("applicant-name").value.trim() ? "" : "성명을 입력해주세요.";
       }),
+      {
+        key: "applicant-phone",
+        targets: [phoneInput],
+        container: phoneField,
+        focusTarget: phoneInput,
+        errorElement: phoneError,
+        validate: () => {
+          syncPhoneHiddenValues();
+          const digits = phoneInput.value.replace(/\D/g, "");
+          if (!digits) return "긴급 연락처를 입력해주세요.";
+
+          const preciseResult = phoneInstance?.isValidNumberPrecise?.();
+          const validationResult = preciseResult ?? phoneInstance?.isValidNumber?.();
+          if (validationResult === true) return "";
+          if (validationResult == null && digits.length >= 7 && digits.length <= 15) return "";
+          return "선택한 국가 형식에 맞는 전화번호를 입력해주세요.";
+        }
+      },
       inputRule("team-name", () => {
         return field("team-name").value.trim() ? "" : "외부에 표시할 팀명을 입력해주세요.";
       }),
@@ -2312,6 +2456,11 @@ if (submitPage) {
     updateConsentRow("event", false);
     updateConsentRow("privacy", false);
     updateConsentRow("international", false);
+    updateConsentRow("updates", false);
+    phoneCountryWasManuallySelected = false;
+    phoneInstance?.setNumber?.("");
+    setPhoneCountry("KR", true);
+    syncPhoneHiddenValues();
     selectedCountryCode = "";
     pendingCountryCode = "";
     countryInput.value = "";
@@ -2359,6 +2508,7 @@ if (submitPage) {
 
   buildCountryOptions();
   renderCountrySelection("");
+  initializePhoneInput();
   countryTrigger.addEventListener("click", openCountryDialog);
   countrySearch.addEventListener("input", () => filterCountryOptions(countrySearch.value));
   countryClose.addEventListener("click", closeCountryDialog);
@@ -2467,6 +2617,7 @@ if (submitPage) {
     event.preventDefault();
     hasSubmittedForm = true;
     syncCountryConsent(false);
+    syncPhoneHiddenValues();
     const invalidRules = validationRules
       .map((rule) => ({ rule, message: validateRule(rule, true) }))
       .filter(({ message }) => Boolean(message));
@@ -2503,6 +2654,7 @@ if (submitPage) {
       formData.set("consent-event", String(consentState.event));
       formData.set("consent-privacy", String(consentState.privacy));
       formData.set("consent-international", String(consentState.international));
+      formData.set("consent-updates", String(consentState.updates));
 
       const response = await fetch("/api/submissions", {
         method: "POST",
